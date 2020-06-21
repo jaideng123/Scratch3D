@@ -8,8 +8,11 @@
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+using namespace std;
 
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[])
+{
 
     // Load GLFW and Create a Window
     glfwInit();
@@ -21,7 +24,8 @@ int main(int argc, char * argv[]) {
     auto mWindow = glfwCreateWindow(mWidth, mHeight, "OpenGL", nullptr, nullptr);
 
     // Check for Valid Context
-    if (mWindow == nullptr) {
+    if (mWindow == nullptr)
+    {
         fprintf(stderr, "Failed to Create OpenGL Context");
         return EXIT_FAILURE;
     }
@@ -29,10 +33,11 @@ int main(int argc, char * argv[]) {
     // Create Context and Load OpenGL Functions
     glfwMakeContextCurrent(mWindow);
     gladLoadGL();
-    fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
-
+    fprintf(stdout, "OpenGL %s\n", glGetString(GL_VERSION));
+    cout << "starting rendering loop";
     // Rendering Loop
-    while (glfwWindowShouldClose(mWindow) == false) {
+    while (glfwWindowShouldClose(mWindow) == false)
+    {
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(mWindow, true);
 
@@ -43,6 +48,7 @@ int main(int argc, char * argv[]) {
         // Flip Buffers and Draw
         glfwSwapBuffers(mWindow);
         glfwPollEvents();
-    }   glfwTerminate();
+    }
+    glfwTerminate();
     return EXIT_SUCCESS;
 }

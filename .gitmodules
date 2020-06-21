@@ -4,6 +4,7 @@
 [submodule "Glitter/Vendors/glad"]
 	path = Glitter/Vendors/glad
 	url = https://github.com/Dav1dde/glad.git
+	branch = c
 [submodule "Glitter/Vendors/glfw"]
 	path = Glitter/Vendors/glfw
 	url = https://github.com/glfw/glfw.git
@@ -13,3 +14,6 @@
 [submodule "Glitter/Vendors/stb"]
 	path = Glitter/Vendors/stb
 	url = https://github.com/nothings/stb.git
+[submodule "Glitter/Vendors/bullet3"]
+	path = Glitter/Vendors/bullet3
+	url = https://github.com/bulletphysics/bullet3.git
