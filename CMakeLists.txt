@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.0)
-project(Glitter)
+project(scratch)
 
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
-add_subdirectory(Glitter/Vendors/glfw)
+add_subdirectory(scratch/vendor/glfw)
 
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 option(ASSIMP_BUILD_SAMPLES OFF)
 option(ASSIMP_BUILD_TESTS OFF)
-add_subdirectory(Glitter/Vendors/assimp)
+add_subdirectory(scratch/vendor/assimp)
 
 option(BUILD_BULLET2_DEMOS OFF)
 option(BUILD_CPU_DEMOS OFF)
 option(BUILD_EXTRAS OFF)
 option(BUILD_OPENGL3_DEMOS OFF)
 option(BUILD_UNIT_TESTS OFF)
-add_subdirectory(Glitter/Vendors/bullet3)
+add_subdirectory(scratch/vendor/bullet3)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -27,21 +27,20 @@ else()
     endif()
 endif()
 
-include_directories(Glitter/Headers/
-                    Glitter/Vendors/assimp/include/
-                    Glitter/Vendors/bullet3/src/
-                    Glitter/Vendors/glad/include/
-                    Glitter/Vendors/glfw/include/
-                    Glitter/Vendors/glm/
-                    Glitter/Vendors/stb/)
+include_directories(scratch/vendor/assimp/include/
+                    scratch/vendor/bullet3/src/
+                    scratch/vendor/glad/include/
+                    scratch/vendor/glfw/include/
+                    scratch/vendor/glm/
+                    scratch/vendor/stb/)
 
-file(GLOB VENDORS_SOURCES Glitter/Vendors/glad/src/glad.c)
-file(GLOB PROJECT_HEADERS Glitter/Headers/*.hpp)
-file(GLOB PROJECT_SOURCES Glitter/Sources/*.cpp)
-file(GLOB PROJECT_SHADERS Glitter/Shaders/*.comp
-                          Glitter/Shaders/*.frag
-                          Glitter/Shaders/*.geom
-                          Glitter/Shaders/*.vert)
+file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c)
+file(GLOB PROJECT_HEADERS scratch/src/*.hpp)
+file(GLOB PROJECT_SOURCES scratch/src/*.cpp)
+file(GLOB PROJECT_SHADERS scratch/shader/*.comp
+                          scratch/shader/*.frag
+                          scratch/shader/*.geom
+                          scratch/shader/*.vert)
 file(GLOB PROJECT_CONFIGS CMakeLists.txt
                           Readme.md
                          .gitattributes
@@ -66,5 +65,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Glitter/Shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/scratch/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>
     DEPENDS ${PROJECT_SHADERS})

@@ -1,19 +1,19 @@
-[submodule "Glitter/Vendors/assimp"]
-	path = Glitter/Vendors/assimp
+[submodule "scratch/vendor/assimp"]
+	path = scratch/vendor/assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "Glitter/Vendors/glad"]
-	path = Glitter/Vendors/glad
+[submodule "scratch/vendor/glad"]
+	path = scratch/vendor/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
-[submodule "Glitter/Vendors/glfw"]
-	path = Glitter/Vendors/glfw
+[submodule "scratch/vendor/glfw"]
+	path = scratch/vendor/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "Glitter/Vendors/glm"]
-	path = Glitter/Vendors/glm
+[submodule "scratch/vendor/glm"]
+	path = scratch/vendor/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Glitter/Vendors/stb"]
-	path = Glitter/Vendors/stb
+[submodule "scratch/vendor/stb"]
+	path = scratch/vendor/stb
 	url = https://github.com/nothings/stb.git
-[submodule "Glitter/Vendors/bullet3"]
-	path = Glitter/Vendors/bullet3
+[submodule "scratch/vendor/bullet3"]
+	path = scratch/vendor/bullet3
 	url = https://github.com/bulletphysics/bullet3.git

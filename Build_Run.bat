@@ -5,4 +5,4 @@ mingw32-make.exe
 cd ..
 if %errorlevel% neq 0 exit /b %errorlevel%
 @echo Running application...
-.\build\Glitter\Glitter
+.\build\Scratch\scratch
