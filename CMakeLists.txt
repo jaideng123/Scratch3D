@@ -21,13 +21,15 @@ add_subdirectory(scratch/vendor/bullet3)
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unknown-pragmas -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-unused-parameter -std=c++11")
     if(NOT WIN32)
         set(GLAD_LIBRARIES dl)
     endif()
 endif()
 
-include_directories(scratch/vendor/assimp/include/
+include_directories(
+    scratch/src/
+    scratch/vendor/assimp/include/
                     scratch/vendor/bullet3/src/
                     scratch/vendor/glad/include/
                     scratch/vendor/glfw/include/
@@ -35,8 +37,8 @@ include_directories(scratch/vendor/assimp/include/
                     scratch/vendor/stb/)
 
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c)
-file(GLOB PROJECT_HEADERS scratch/src/*.hpp)
-file(GLOB PROJECT_SOURCES scratch/src/*.cpp)
+file(GLOB PROJECT_HEADERS scratch/src/**/*.h* scratch/src/*.h*)
+file(GLOB PROJECT_SOURCES scratch/src/**/*.cpp scratch/src/*.cpp)
 file(GLOB PROJECT_SHADERS scratch/shader/*.comp
                           scratch/shader/*.frag
                           scratch/shader/*.geom

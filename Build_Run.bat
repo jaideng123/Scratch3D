@@ -2,7 +2,8 @@ cmake.exe --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE
 if %errorlevel% neq 0 exit /b %errorlevel%
 cd build
 mingw32-make.exe
-cd ..
 if %errorlevel% neq 0 exit /b %errorlevel%
+cd ..
+
 @echo Running application...
 .\build\Scratch\scratch
