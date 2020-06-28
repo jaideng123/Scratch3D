@@ -3,6 +3,7 @@
 #include "shader/shader.h"
 #include "model/model.hpp"
 #include "camera/camera.hpp"
+#include "entity/entity.hpp"
 
 // System Headers
 #include <glad/glad.h>
@@ -12,6 +13,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
+#include <optional>
 
 Camera camera = Camera();
 
@@ -24,6 +27,7 @@ bool firstMouse = true;
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
+
     if (firstMouse)
     {
         lastX = xpos;
@@ -37,12 +41,21 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
+    if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
+    {
+        return;
+    }
+
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void processInput(GLFWwindow *window)
 {
-    float cameraSpeed = 2.5f * deltaTime;
+    if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
+    {
+        return;
+    }
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -57,7 +70,7 @@ void processInput(GLFWwindow *window)
 
 int main()
 {
-    stbi_set_flip_vertically_on_load(true);
+    // stbi_set_flip_vertically_on_load(true);
     // Load GLFW and Create a Window
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -80,25 +93,39 @@ int main()
     fprintf(stdout, "OpenGL %s\n", glGetString(GL_VERSION));
 
     // hide + capture cursor
-    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // get cursor input
     glfwSetCursorPosCallback(mWindow, mouse_callback);
     glViewport(0, 0, mWidth, mHeight);
 
     std::cout << "Loading Shaders..." << std::endl;
-    Scratch::Shader unlitShader = Scratch::Shader("./scratch/shaders/unlit.vert", "./scratch/shaders/unlit.frag");
+    scratch::Shader unlitShader = scratch::Shader("./scratch/shaders/unlit.vert", "./scratch/shaders/unlit.frag");
 
     std::cout << "Loading Models..." << std::endl;
-    Scratch::Model nanosuitModel = Scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
+    scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
+    scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
+
+    std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(1.0f), nanosuitModel, unlitShader));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(1.0f), stoneModel, unlitShader));
+
+    glEnable(GL_DEPTH_TEST);
 
     std::cout
         << "starting rendering loop";
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false)
     {
+        if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_2))
+        {
+            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        else
+        {
+            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
         // Background Fill Color
         glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(mWindow, true);
@@ -108,15 +135,22 @@ int main()
         lastFrame = currentFrame;
 
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective<double>(glm::radians(45.0f), mWidth / mHeight, 0.1f, 100.0f);
-        unlitShader.use();
-        unlitShader.setMat4("view", view);
-        unlitShader.setMat4("projection", projection);
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(.2f));
-        model = glm::translate(model, glm::vec3(0, 0, 0));
-        unlitShader.setMat4("model", model);
-        nanosuitModel.Draw(unlitShader);
+        glm::mat4 projection = glm::perspective<double>(glm::radians(60.0f), mWidth / mHeight, 0.1f, 100.0f);
+
+        std::optional<scratch::Shader> currentShader = {};
+        for (size_t i = 0; i < entities.size(); i++)
+        {
+            if (!currentShader.has_value() || entities[i].getShader().ID != currentShader.value().ID)
+            {
+                currentShader = entities[i].getShader();
+                currentShader.value().use();
+                currentShader.value().setMat4("view", view);
+                currentShader.value().setMat4("projection", projection);
+            }
+            currentShader.value().setMat4("model", entities[i].generateTransformMatrix());
+            entities[i].getModel().Draw(unlitShader);
+        }
+
         processInput(mWindow);
 
         // Flip Buffers and Draw

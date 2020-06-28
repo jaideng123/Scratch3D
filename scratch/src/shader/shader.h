@@ -6,28 +6,29 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
-namespace Scratch
+namespace scratch
 {
-class Shader
-{
-public:
-    unsigned int ID;
+    class Shader
+    {
+    public:
+        unsigned int ID;
 
-    // Read + compile shader
-    Shader(const std::string vertexPath, const std::string fragmentPath);
-    // Activate shader
-    void use();
+        // Read + compile shader
+        Shader(const std::string vertexPath, const std::string fragmentPath);
+        Shader() = default;
+        // Activate shader
+        void use();
 
-    void setBool(const std::string &name, bool value) const;
-    void setInt(const std::string &name, int value) const;
-    void setFloat(const std::string &name, float value) const;
-    void setMat4(const std::string &name, glm::mat4 value) const;
-    void setVec3(const std::string &name, glm::vec3 value) const;
+        void setBool(const std::string &name, bool value) const;
+        void setInt(const std::string &name, int value) const;
+        void setFloat(const std::string &name, float value) const;
+        void setMat4(const std::string &name, glm::mat4 value) const;
+        void setVec3(const std::string &name, glm::vec3 value) const;
 
-private:
-    std::string readFileContents(std::string filename);
-    void checkSuccessfulShaderCompilation(int shaderId);
-    int generateAndCompileShader(std::string sourceFileLocation, int shaderType);
-    void checkSuccessfulShaderLink(int shaderId);
-};
-} // namespace Scratch
+    private:
+        std::string readFileContents(std::string filename);
+        void checkSuccessfulShaderCompilation(int shaderId);
+        int generateAndCompileShader(std::string sourceFileLocation, int shaderType);
+        void checkSuccessfulShaderLink(int shaderId);
+    };
+} // namespace scratch

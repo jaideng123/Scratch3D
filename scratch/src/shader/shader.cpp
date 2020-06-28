@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Scratch::Shader::Shader(const std::string vertexPath, const std::string fragmentPath)
+scratch::Shader::Shader(const std::string vertexPath, const std::string fragmentPath)
 {
     int vertexShader = generateAndCompileShader(vertexPath, GL_VERTEX_SHADER);
     checkSuccessfulShaderCompilation(vertexShader);
@@ -31,37 +31,37 @@ Scratch::Shader::Shader(const std::string vertexPath, const std::string fragment
     glDeleteShader(fragmentShader);
 }
 
-void Scratch::Shader::use()
+void scratch::Shader::use()
 {
     glUseProgram(ID);
 }
 
-void Scratch::Shader::setBool(const std::string &name, bool value) const
+void scratch::Shader::setBool(const std::string &name, bool value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Scratch::Shader::setInt(const std::string &name, int value) const
+void scratch::Shader::setInt(const std::string &name, int value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Scratch::Shader::setFloat(const std::string &name, float value) const
+void scratch::Shader::setFloat(const std::string &name, float value) const
 {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Scratch::Shader::setMat4(const std::string &name, glm::mat4 value) const
+void scratch::Shader::setMat4(const std::string &name, glm::mat4 value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Scratch::Shader::setVec3(const std::string &name, glm::vec3 value) const
+void scratch::Shader::setVec3(const std::string &name, glm::vec3 value) const
 {
     glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
 }
 
-int Scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, int shaderType)
+int scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, int shaderType)
 {
     unsigned int shaderId;
     // Create Shader Object
@@ -79,7 +79,7 @@ int Scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, in
     return shaderId;
 }
 
-std::string Scratch::Shader::readFileContents(std::string filename)
+std::string scratch::Shader::readFileContents(std::string filename)
 {
     std::ifstream file;
     file.open(filename);
@@ -90,7 +90,7 @@ std::string Scratch::Shader::readFileContents(std::string filename)
     return fileStream.str();
 }
 
-void Scratch::Shader::checkSuccessfulShaderCompilation(int shaderId)
+void scratch::Shader::checkSuccessfulShaderCompilation(int shaderId)
 {
     // Check if shader compilation was successful
     int success;
@@ -99,13 +99,13 @@ void Scratch::Shader::checkSuccessfulShaderCompilation(int shaderId)
     if (!success)
     {
         glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        std::cout << "ERROR::Scratch::SHADER::VERTEX::COMPILATION_FAILED\n"
+        std::cout << "ERROR::scratch::SHADER::VERTEX::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
         throw std::runtime_error("Shader Compilation Unsuccessful");
     }
 }
 
-void Scratch::Shader::checkSuccessfulShaderLink(int shaderProgramId)
+void scratch::Shader::checkSuccessfulShaderLink(int shaderProgramId)
 {
     // Check if shader compilation was successful
     int success;
@@ -114,7 +114,7 @@ void Scratch::Shader::checkSuccessfulShaderLink(int shaderProgramId)
     if (!success)
     {
         glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
-        std::cout << "ERROR::Scratch::SHADER::PROGRAM::LINK_FAILED\n"
+        std::cout << "ERROR::scratch::SHADER::PROGRAM::LINK_FAILED\n"
                   << infoLog << std::endl;
         throw std::runtime_error("Shader Linking Unsuccessful");
     }
