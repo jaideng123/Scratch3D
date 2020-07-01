@@ -17,6 +17,7 @@
 #include <optional>
 
 Camera camera = Camera();
+scratch::Entity *selectedEntity;
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -51,21 +52,28 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 void processInput(GLFWwindow *window)
 {
-    if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
     {
-        return;
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime);
     }
-
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+    float moveSpeed = 4.0f;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(1, 0, 0) * deltaTime * moveSpeed));
 }
 
 int main()
@@ -105,8 +113,11 @@ int main()
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
 
     std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(1.0f), nanosuitModel, unlitShader));
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(1.0f), stoneModel, unlitShader));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel, unlitShader));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel, unlitShader));
+
+    selectedEntity = &entities[0];
+    int selectedEntityIndex = 0;
 
     glEnable(GL_DEPTH_TEST);
 
@@ -129,6 +140,12 @@ int main()
 
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(mWindow, true);
+        // TODO: move this to key callback
+        // if (glfwGetKey(mWindow, GLFW_KEY_TAB) == GLFW_PRESS)
+        // {
+        //     selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
+        //     selectedEntity = &entities[selectedEntityIndex];
+        // }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -148,7 +165,7 @@ int main()
                 currentShader.value().setMat4("projection", projection);
             }
             currentShader.value().setMat4("model", entities[i].generateTransformMatrix());
-            entities[i].getModel().Draw(unlitShader);
+            entities[i].getModel().Draw(currentShader.value());
         }
 
         processInput(mWindow);
