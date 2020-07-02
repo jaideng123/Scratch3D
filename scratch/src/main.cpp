@@ -18,6 +18,7 @@
 
 Camera camera = Camera();
 scratch::Entity *selectedEntity;
+std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -50,6 +51,16 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
+int selectedEntityIndex = 0;
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+    {
+        selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
+        selectedEntity = &entities[selectedEntityIndex];
+    }
+}
+
 void processInput(GLFWwindow *window)
 {
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
@@ -66,10 +77,20 @@ void processInput(GLFWwindow *window)
             camera.ProcessKeyboard(RIGHT, deltaTime);
     }
     float moveSpeed = 4.0f;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 0, 1) * deltaTime * moveSpeed));
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 0, -1) * deltaTime * moveSpeed));
+    }
+    else
+    {
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
+    }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
         selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
@@ -103,6 +124,7 @@ int main()
     // hide + capture cursor
     // get cursor input
     glfwSetCursorPosCallback(mWindow, mouse_callback);
+    glfwSetKeyCallback(mWindow, keyCallback);
     glViewport(0, 0, mWidth, mHeight);
 
     std::cout << "Loading Shaders..." << std::endl;
@@ -112,12 +134,11 @@ int main()
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
 
-    std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
     entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel, unlitShader));
     entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel, unlitShader));
 
     selectedEntity = &entities[0];
-    int selectedEntityIndex = 0;
+    selectedEntityIndex = 0;
 
     glEnable(GL_DEPTH_TEST);
 
@@ -140,12 +161,6 @@ int main()
 
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(mWindow, true);
-        // TODO: move this to key callback
-        // if (glfwGetKey(mWindow, GLFW_KEY_TAB) == GLFW_PRESS)
-        // {
-        //     selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
-        //     selectedEntity = &entities[selectedEntityIndex];
-        // }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -164,6 +179,7 @@ int main()
                 currentShader.value().setMat4("view", view);
                 currentShader.value().setMat4("projection", projection);
             }
+            currentShader.value().setBool("highlighted", (selectedEntity == &entities[i]));
             currentShader.value().setMat4("model", entities[i].generateTransformMatrix());
             entities[i].getModel().Draw(currentShader.value());
         }
