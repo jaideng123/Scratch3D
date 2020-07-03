@@ -11,9 +11,11 @@
 scratch::Shader::Shader(const std::string vertexPath, const std::string fragmentPath)
 {
     int vertexShader = generateAndCompileShader(vertexPath, GL_VERTEX_SHADER);
+    _vertexPath = vertexPath;
     checkSuccessfulShaderCompilation(vertexShader);
 
     int fragmentShader = generateAndCompileShader(fragmentPath, GL_FRAGMENT_SHADER);
+    _fragmentPath = fragmentPath;
     checkSuccessfulShaderCompilation(fragmentShader);
 
     unsigned int shaderProgram;
@@ -34,6 +36,36 @@ scratch::Shader::Shader(const std::string vertexPath, const std::string fragment
 void scratch::Shader::use()
 {
     glUseProgram(ID);
+}
+
+void scratch::Shader::reload()
+{
+    std::cout << "Reloading shader..." << std::endl;
+    int vertexShader = generateAndCompileShader(_vertexPath, GL_VERTEX_SHADER);
+    checkSuccessfulShaderCompilation(vertexShader);
+
+    int fragmentShader = generateAndCompileShader(_fragmentPath, GL_FRAGMENT_SHADER);
+    checkSuccessfulShaderCompilation(fragmentShader);
+
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    checkSuccessfulShaderLink(shaderProgram);
+
+    std::cout << "Deleting Shader: " << ID << std::endl;
+    glDeleteProgram(ID);
+    std::cout << "Setting new Shader ID: " << shaderProgram << std::endl;
+    ID = shaderProgram;
+    std::cout << "Set new Shader ID: " << ID << std::endl;
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    std::cout << "Finished reloading shader..." << std::endl;
+    reloaded = true;
 }
 
 void scratch::Shader::setBool(const std::string &name, bool value) const

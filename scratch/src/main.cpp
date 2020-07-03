@@ -59,6 +59,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
         selectedEntity = &entities[selectedEntityIndex];
     }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS)
+    {
+        selectedEntity->getShader()->reload();
+    }
 }
 
 void processInput(GLFWwindow *window)
@@ -134,16 +138,15 @@ int main()
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
 
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel, unlitShader));
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel, unlitShader));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel, &unlitShader));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel, &unlitShader));
 
     selectedEntity = &entities[0];
     selectedEntityIndex = 0;
 
     glEnable(GL_DEPTH_TEST);
 
-    std::cout
-        << "starting rendering loop";
+    std::cout << "starting rendering loop" << std::endl;
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false)
     {
@@ -172,12 +175,13 @@ int main()
         std::optional<scratch::Shader> currentShader = {};
         for (size_t i = 0; i < entities.size(); i++)
         {
-            if (!currentShader.has_value() || entities[i].getShader().ID != currentShader.value().ID)
+            if (!currentShader.has_value() || currentShader.value().reloaded || entities[i].getShader()->ID != currentShader.value().ID)
             {
-                currentShader = entities[i].getShader();
+                currentShader = *entities[i].getShader();
                 currentShader.value().use();
                 currentShader.value().setMat4("view", view);
                 currentShader.value().setMat4("projection", projection);
+                currentShader.value().reloaded = false;
             }
             currentShader.value().setBool("highlighted", (selectedEntity == &entities[i]));
             currentShader.value().setMat4("model", entities[i].generateTransformMatrix());

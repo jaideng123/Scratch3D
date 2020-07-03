@@ -12,12 +12,15 @@ namespace scratch
     {
     public:
         unsigned int ID;
+        bool reloaded;
 
         // Read + compile shader
         Shader(const std::string vertexPath, const std::string fragmentPath);
         Shader() = default;
         // Activate shader
         void use();
+
+        void reload();
 
         void setBool(const std::string &name, bool value) const;
         void setInt(const std::string &name, int value) const;
@@ -26,6 +29,8 @@ namespace scratch
         void setVec3(const std::string &name, glm::vec3 value) const;
 
     private:
+        std::string _vertexPath;
+        std::string _fragmentPath;
         std::string readFileContents(std::string filename);
         void checkSuccessfulShaderCompilation(int shaderId);
         int generateAndCompileShader(std::string sourceFileLocation, int shaderType);

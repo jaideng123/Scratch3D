@@ -12,10 +12,10 @@ namespace scratch
         glm::vec3 _position;
         glm::vec3 _scale;
         scratch::Model _model;
-        scratch::Shader _shader;
+        scratch::Shader *_shader;
 
     public:
-        Entity(glm::vec3 position, glm::vec3 scale, scratch::Model model, scratch::Shader shader)
+        Entity(glm::vec3 position, glm::vec3 scale, scratch::Model model, scratch::Shader *shader)
         {
             _position = position;
             _scale = scale;
@@ -34,7 +34,7 @@ namespace scratch
             return _model;
         }
 
-        scratch::Shader getShader()
+        scratch::Shader *getShader()
         {
             return _shader;
         }
