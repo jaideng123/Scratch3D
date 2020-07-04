@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "shader/shader.h"
+#include "material/material.hpp"
 
 namespace scratch
 {
@@ -30,29 +31,22 @@ namespace scratch
         glm::vec3 bitangent;
     };
 
-    struct Texture
-    {
-        unsigned int id;
-        std::string type;
-        std::string path;
-    };
-
     class Mesh
     {
     public:
         /*  Mesh Data  */
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
-        std::vector<Texture> textures;
+        scratch::Material *material;
         unsigned int VAO;
 
         /*  Functions  */
         // constructor
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, scratch::Material *material)
         {
             this->vertices = vertices;
             this->indices = indices;
-            this->textures = textures;
+            this->material = material;
 
             // now that we have all the required data, set the vertex buffers and its attribute pointers.
             setupMesh();
@@ -61,32 +55,7 @@ namespace scratch
         // render the mesh
         void Draw(Shader shader)
         {
-            // bind appropriate textures
-            unsigned int diffuseNr = 1;
-            unsigned int specularNr = 1;
-            unsigned int normalNr = 1;
-            unsigned int heightNr = 1;
-            for (unsigned int i = 0; i < textures.size(); i++)
-            {
-                glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-                // retrieve texture number (the N in diffuse_textureN)
-                std::string number;
-                std::string name = textures[i].type;
-                if (name == "texture_diffuse")
-                    number = std::to_string(diffuseNr++);
-                else if (name == "texture_specular")
-                    number = std::to_string(specularNr++); // transfer unsigned int to stream
-                else if (name == "texture_normal")
-                    number = std::to_string(normalNr++); // transfer unsigned int to stream
-                else if (name == "texture_height")
-                    number = std::to_string(heightNr++); // transfer unsigned int to stream
-
-                // now set the sampler to the correct texture unit
-                glUniform1i(glGetUniformLocation(shader.ID, ("material." + name + number).c_str()), i);
-                // and finally bind the texture
-                glBindTexture(GL_TEXTURE_2D, textures[i].id);
-            }
-
+            material->activate(&shader);
             // draw mesh
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

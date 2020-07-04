@@ -13,6 +13,7 @@
 
 #include "shader/shader.h"
 #include "mesh/mesh.hpp"
+#include "material/material.hpp"
 
 namespace scratch
 {
@@ -42,6 +43,7 @@ namespace scratch
     private:
         /*  Model Data  */
         std::vector<Mesh> meshes;
+        std::vector<Material> materials;
         std::string directory;
         /*  Functions   */
         void loadModel(std::string path)
@@ -57,6 +59,12 @@ namespace scratch
             }
             // We assume that all textures are in the same directory as the scene
             directory = path.substr(0, path.find_last_of('/'));
+
+            for (size_t i = 0; i < scene->mNumMaterials; ++i)
+            {
+                Material material = transformMaterial(scene->mMaterials[i]);
+                materials.push_back(material);
+            }
 
             processNode(scene->mRootNode, scene);
         }
@@ -75,6 +83,32 @@ namespace scratch
             {
                 processNode(node->mChildren[i], scene);
             }
+        }
+
+        Material transformMaterial(aiMaterial *assimpMaterial)
+        {
+            // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
+            // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
+            // Same applies to other texture as the following list summarizes:
+            // diffuse: texture_diffuseN
+            // specular: texture_specularN
+            // normal: texture_normalN
+            // 1. diffuse maps
+            std::vector<Texture> textures = std::vector<Texture>();
+
+            std::vector<Texture> diffuseMaps = loadMaterialTextures(assimpMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
+            textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+            // 2. specular maps
+            std::vector<Texture> specularMaps = loadMaterialTextures(assimpMaterial, aiTextureType_SPECULAR, "texture_specular");
+            textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+            // 3. normal maps
+            std::vector<Texture> normalMaps = loadMaterialTextures(assimpMaterial, aiTextureType_HEIGHT, "texture_normal");
+            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+            // 4. height maps
+            std::vector<Texture> heightMaps = loadMaterialTextures(assimpMaterial, aiTextureType_AMBIENT, "texture_height");
+            textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+            return Material(textures);
         }
 
         Mesh processMesh(aiMesh *mesh, const aiScene *scene)
@@ -121,30 +155,9 @@ namespace scratch
                 for (unsigned int j = 0; j < face.mNumIndices; j++)
                     indices.push_back(face.mIndices[j]);
             }
-            // process materials
-            aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-            // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
-            // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
-            // Same applies to other texture as the following list summarizes:
-            // diffuse: texture_diffuseN
-            // specular: texture_specularN
-            // normal: texture_normalN
-
-            // 1. diffuse maps
-            std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-            textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-            // 2. specular maps
-            std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-            textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-            // 3. normal maps
-            std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-            textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-            // 4. height maps
-            std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-            textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
             // return a mesh object created from the extracted mesh data
-            return Mesh(vertices, indices, textures);
+            return Mesh(vertices, indices, &materials[mesh->mMaterialIndex]);
         }
         std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
                                                   std::string typeName)
