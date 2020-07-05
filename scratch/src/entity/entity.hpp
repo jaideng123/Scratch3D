@@ -12,15 +12,13 @@ namespace scratch
         glm::vec3 _position;
         glm::vec3 _scale;
         scratch::Model _model;
-        scratch::Shader *_shader;
 
     public:
-        Entity(glm::vec3 position, glm::vec3 scale, scratch::Model model, scratch::Shader *shader)
+        Entity(glm::vec3 position, glm::vec3 scale, scratch::Model model)
         {
             _position = position;
             _scale = scale;
             _model = model;
-            _shader = shader;
             _ID = rand();
         }
 
@@ -32,11 +30,6 @@ namespace scratch
         scratch::Model getModel()
         {
             return _model;
-        }
-
-        scratch::Shader *getShader()
-        {
-            return _shader;
         }
 
         glm::mat4 generateTransformMatrix()

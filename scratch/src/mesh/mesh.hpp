@@ -53,16 +53,12 @@ namespace scratch
         }
 
         // render the mesh
-        void Draw(Shader shader)
+        void Draw()
         {
-            material->activate(&shader);
             // draw mesh
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
-
-            // always good practice to set everything back to defaults once configured.
-            glActiveTexture(GL_TEXTURE0);
         }
 
     private:

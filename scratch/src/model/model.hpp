@@ -32,12 +32,9 @@ namespace scratch
 
         Model() = default;
 
-        void Draw(Shader shader)
+        std::vector<scratch::Mesh> &getMeshes()
         {
-            for (unsigned int i = 0; i < meshes.size(); i++)
-            {
-                meshes[i].Draw(shader);
-            }
+            return meshes;
         }
 
     private:

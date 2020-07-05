@@ -12,7 +12,6 @@ namespace scratch
     {
     public:
         unsigned int ID;
-        bool reloaded;
 
         // Read + compile shader
         Shader(const std::string vertexPath, const std::string fragmentPath);

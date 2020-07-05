@@ -17,8 +17,9 @@
 #include <optional>
 
 Camera camera = Camera();
-scratch::Entity *selectedEntity;
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
+
+std::vector<scratch::Shader *> shaders = std::vector<scratch::Shader *>();
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -57,11 +58,13 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
     {
         selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
-        selectedEntity = &entities[selectedEntityIndex];
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
     {
-        selectedEntity->getShader()->reload();
+        for (size_t i = 0; i < shaders.size(); i++)
+        {
+            shaders[i]->reload();
+        }
     }
 }
 
@@ -81,6 +84,7 @@ void processInput(GLFWwindow *window)
             camera.ProcessKeyboard(RIGHT, deltaTime);
     }
     float moveSpeed = 4.0f;
+    scratch::Entity *selectedEntity = &entities[selectedEntityIndex];
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
@@ -99,6 +103,14 @@ void processInput(GLFWwindow *window)
         selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(1, 0, 0) * deltaTime * moveSpeed));
+}
+
+void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader shader)
+{
+    for (size_t i = 0; i < meshes.size(); i++)
+    {
+        meshes[i].material->setShader(&shader);
+    }
 }
 
 int main()
@@ -133,15 +145,18 @@ int main()
 
     std::cout << "Loading Shaders..." << std::endl;
     scratch::Shader unlitShader = scratch::Shader("./scratch/shaders/unlit.vert", "./scratch/shaders/unlit.frag");
+    shaders.push_back(&unlitShader);
 
     std::cout << "Loading Models..." << std::endl;
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
+    setDefaultShader(nanosuitModel.getMeshes(), unlitShader);
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
+    setDefaultShader(stoneModel.getMeshes(), unlitShader);
 
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel, &unlitShader));
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel, &unlitShader));
+    // entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), stoneModel));
+    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), nanosuitModel));
 
-    selectedEntity = &entities[0];
     selectedEntityIndex = 0;
 
     glEnable(GL_DEPTH_TEST);
@@ -172,20 +187,33 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective<double>(glm::radians(60.0f), mWidth / mHeight, 0.1f, 100.0f);
 
-        std::optional<scratch::Shader> currentShader = {};
+        std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
         for (size_t i = 0; i < entities.size(); i++)
         {
-            if (!currentShader.has_value() || currentShader.value().reloaded || entities[i].getShader()->ID != currentShader.value().ID)
+            std::vector<scratch::Mesh> toAdd = entities[i].getModel().getMeshes();
+            bool highlighted = (i == selectedEntityIndex);
+            glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
+            for (size_t j = 0; j < toAdd.size(); j++)
             {
-                currentShader = *entities[i].getShader();
-                currentShader.value().use();
-                currentShader.value().setMat4("view", view);
-                currentShader.value().setMat4("projection", projection);
-                currentShader.value().reloaded = false;
+                toAdd[j].material->setBool("highlighted", highlighted);
+                toAdd[j].material->setMat4("model", modelMatrix);
+                toAdd[j].material->setMat4("view", view);
+                toAdd[j].material->setMat4("projection", projection);
+                renderQueue.push_back(toAdd[j]);
             }
-            currentShader.value().setBool("highlighted", (selectedEntity == &entities[i]));
-            currentShader.value().setMat4("model", entities[i].generateTransformMatrix());
-            entities[i].getModel().Draw(currentShader.value());
+        }
+
+        std::optional<scratch::Material> currentMaterial = {};
+        for (size_t i = 0; i < renderQueue.size(); i++)
+        {
+            if (!currentMaterial.has_value() || renderQueue[i].material->ID != currentMaterial.value().ID)
+            {
+                currentMaterial = *renderQueue[i].material;
+                currentMaterial.value().activate();
+                // TODO: fix issues with view matrix serialization
+                renderQueue[i].material->getShader()->setMat4("view", view);
+            }
+            renderQueue[i].Draw();
         }
 
         processInput(mWindow);

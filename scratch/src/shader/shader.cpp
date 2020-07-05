@@ -65,7 +65,6 @@ void scratch::Shader::reload()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
     std::cout << "Finished reloading shader..." << std::endl;
-    reloaded = true;
 }
 
 void scratch::Shader::setBool(const std::string &name, bool value) const
