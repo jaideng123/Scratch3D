@@ -2,7 +2,9 @@
 
 #include <stdlib.h>
 #include <glm/glm.hpp>
-#include "model/model.hpp"
+#include <renderable/renderable.h>
+#include "model/model.h"
+
 namespace scratch
 {
     class Entity
@@ -11,14 +13,14 @@ namespace scratch
         unsigned int _ID;
         glm::vec3 _position;
         glm::vec3 _scale;
-        scratch::Model _model;
+        scratch::Renderable *_renderable;
 
     public:
-        Entity(glm::vec3 position, glm::vec3 scale, scratch::Model model)
+        Entity(const glm::vec3 position, const glm::vec3 scale, scratch::Renderable *renderable)
         {
             _position = position;
             _scale = scale;
-            _model = model;
+            _renderable = renderable;
             _ID = rand();
         }
 
@@ -27,9 +29,9 @@ namespace scratch
             return _ID;
         }
 
-        scratch::Model getModel()
+        scratch::Renderable* getRenderable()
         {
-            return _model;
+            return _renderable;
         }
 
         glm::mat4 generateTransformMatrix()

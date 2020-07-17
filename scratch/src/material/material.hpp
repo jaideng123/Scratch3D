@@ -65,7 +65,7 @@ namespace scratch
             scratch::Parameter param;
             param.type = scratch::ParameterType::BOOL;
             param.value = scratch::StringConverter::toString(value, false);
-            parameters.insert(std::make_pair(name, param));
+            parameters[name] = param;
         }
 
         void setInt(const std::string &name, int value)
@@ -73,7 +73,7 @@ namespace scratch
             scratch::Parameter param;
             param.type = scratch::ParameterType::INT;
             param.value = scratch::StringConverter::toString(value);
-            parameters.insert(std::make_pair(name, param));
+            parameters[name] = param;
         }
 
         void setFloat(const std::string &name, float value)
@@ -81,7 +81,7 @@ namespace scratch
             scratch::Parameter param;
             param.type = scratch::ParameterType::FLOAT;
             param.value = scratch::StringConverter::toString(value);
-            parameters.insert(std::make_pair(name, param));
+            parameters[name] = param;
         }
 
         void setMat4(const std::string &name, glm::mat4 value)
@@ -89,7 +89,7 @@ namespace scratch
             scratch::Parameter param;
             param.type = scratch::ParameterType::MATRIX4;
             param.value = scratch::StringConverter::toString(value);
-            parameters.insert(std::make_pair(name, param));
+            parameters[name] = param;
         }
 
         void setVec3(const std::string &name, glm::vec3 value)
@@ -97,7 +97,7 @@ namespace scratch
             scratch::Parameter param;
             param.type = scratch::ParameterType::VECTOR3;
             param.value = scratch::StringConverter::toString(value);
-            parameters.insert(std::make_pair(name, param));
+            parameters[name] = param;
         }
 
         void setupTextures()

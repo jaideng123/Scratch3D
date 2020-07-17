@@ -112,7 +112,8 @@ std::string scratch::StringConverter::toString(const glm::mat4 &val)
            << val[3][1] << " "
            << val[3][2] << " "
            << val[3][3];
-    return stream.str();
+    std::string returnValue = stream.str();
+    return returnValue;
 }
 //-----------------------------------------------------------------------
 float scratch::StringConverter::parsefloat(const std::string &val)
