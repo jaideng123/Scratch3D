@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include <optional>
+#include <lights/directionalLight.h>
 
 Camera camera = Camera();
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
@@ -149,10 +150,12 @@ int main() {
     std::cout << "Loading Shaders..." << std::endl;
     scratch::Shader unlitShader = scratch::Shader("./scratch/shaders/unlit.vert", "./scratch/shaders/unlit.frag");
     shaders.push_back(&unlitShader);
+    scratch::Shader litShader = scratch::Shader("./scratch/shaders/lit.vert", "./scratch/shaders/lit.frag");
+    shaders.push_back(&litShader);
 
     std::cout << "Loading Models..." << std::endl;
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
-    setDefaultShader(nanosuitModel.getMeshes(), unlitShader);
+    setDefaultShader(nanosuitModel.getMeshes(), litShader);
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
     setDefaultShader(stoneModel.getMeshes(), unlitShader);
 
@@ -164,7 +167,13 @@ int main() {
 
     selectedEntityIndex = 0;
 
+    scratch::DirectionalLight directionalLight = scratch::DirectionalLight( glm::vec3(-0.2f, -1.0f, -0.3f), scratch::Color(glm::vec3(0.3f)*0.2f),
+                                                                           scratch::Color(glm::vec3(1.0f)), scratch::WHITE);
+
     glEnable(GL_DEPTH_TEST);
+
+    // Enable Gamma correction (physically correct colors)
+//    glEnable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, nullptr);
@@ -199,6 +208,7 @@ int main() {
             for (size_t j = 0; j < toAdd.size(); j++) {
                 toAdd[j].material->setBool("highlighted", highlighted);
                 toAdd[j].material->setMat4("model", modelMatrix);
+                toAdd[j].material->setFloat("material.shininess", 32.0f);
                 renderQueue.push_back(toAdd[j]);
             }
         }
@@ -210,6 +220,8 @@ int main() {
                 currentMaterial.value().activate();
                 currentMaterial.value().getShader()->setMat4("view", view);
                 currentMaterial.value().getShader()->setMat4("projection", projection);
+                currentMaterial.value().getShader()->setVec3("viewPos", camera.getPosition());
+                directionalLight.ApplyToShader(*currentMaterial.value().getShader());
             }
             renderQueue[i].Draw();
         }
