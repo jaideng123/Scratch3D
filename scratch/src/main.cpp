@@ -157,7 +157,7 @@ int main() {
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
     setDefaultShader(nanosuitModel.getMeshes(), litShader);
     scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
-    setDefaultShader(stoneModel.getMeshes(), unlitShader);
+    setDefaultShader(stoneModel.getMeshes(), litShader);
 
     std::cout << "Creating Entities..." << std::endl;
     entities.push_back(
@@ -167,13 +167,13 @@ int main() {
 
     selectedEntityIndex = 0;
 
-    scratch::DirectionalLight directionalLight = scratch::DirectionalLight( glm::vec3(-0.2f, -1.0f, -0.3f), scratch::Color(glm::vec3(0.3f)*0.2f),
-                                                                           scratch::Color(glm::vec3(1.0f)), scratch::WHITE);
+    scratch::DirectionalLight directionalLight = scratch::DirectionalLight( glm::vec3(-0.2f, -1.0f, -0.3f), scratch::Color(glm::vec3(0.2f)),
+                                                                           scratch::Color(glm::vec3(0.5f)), scratch::WHITE);
 
     glEnable(GL_DEPTH_TEST);
 
     // Enable Gamma correction (physically correct colors)
-//    glEnable(GL_FRAMEBUFFER_SRGB);
+    glEnable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, nullptr);
@@ -187,7 +187,7 @@ int main() {
             glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
         // Background Fill Color
-        glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)

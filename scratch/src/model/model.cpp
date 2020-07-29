@@ -10,6 +10,7 @@
 #include "mesh/mesh.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 #include "model.h"
@@ -27,7 +28,8 @@ scratch::Model::Model(std::string path) {
 void scratch::Model::loadModel(std::string path) {
     Assimp::Importer import;
     // Import scene data (Triangulate = Make all faces 3 indices(x,y,z))
-    const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene *scene = import.ReadFile(path,
+                                           aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;

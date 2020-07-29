@@ -2,6 +2,7 @@
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
+    sampler2D texture_normal1;
     sampler2D emission;
     float shininess;
 };
@@ -16,6 +17,8 @@ struct DirectionalLight {
 in vec2 TexCoords;
 in vec3 Normal;
 in vec3 FragPos;
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
 
 uniform Material material;
 uniform DirectionalLight dirLight;
@@ -29,9 +32,12 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir);
 
 void main()
 {
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
+    // obtain normal from normal map in range [0,1]
+    vec3 normal = normalize(texture(material.texture_normal1, TexCoords).rgb);
+    normal = normalize(normal * 2.0 - 1.0);
+    vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+
+    vec3 result = CalcDirLight(dirLight, normal, viewDir);
 
     if(highlighted){
         result += vec3(0,0.5f,0);
@@ -44,7 +50,7 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
+    float diff = max(dot(lightDir, normal), 0.0);
     // specular shading
     vec3 halfwayDir = normalize(lightDir + viewDir);
     // Calculate Specular with Blinn-Phong
