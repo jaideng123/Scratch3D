@@ -56,7 +56,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-int selectedEntityIndex = 0;
+unsigned int selectedEntityIndex = 0;
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
@@ -119,6 +119,33 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader shader
     }
 }
 
+void handleSelection(scratch::Shader& selectionShader, glm::mat4& view, glm::mat4& projection){
+    glDisable(GL_FRAMEBUFFER_SRGB);
+    glClearColor(0, 0, 0, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (size_t i = 0; i < entities.size(); i++) {
+        std::vector<scratch::Mesh> toAdd = entities[i].getRenderable()->getMeshes();
+        glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
+        for (size_t j = 0; j < toAdd.size(); j++) {
+            selectionShader.use();
+            selectionShader.setMat4("model", modelMatrix);
+            selectionShader.setMat4("view", view);
+            selectionShader.setMat4("projection", projection);
+            selectionShader.setUnsignedInt("entityId",i+1);
+            toAdd[j].Draw();
+        }
+    }
+    GLubyte pixel[3];
+    glReadPixels(lastX,mHeight - lastY,1,1,GL_RGB,GL_UNSIGNED_BYTE,&pixel);
+    printf("%u %u %u\n", pixel[0], pixel[1], pixel[2]);
+    selectedEntityIndex = pixel[0] - 1;
+
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
 int main() {
     // stbi_set_flip_vertically_on_load(true);
     // Load GLFW and Create a Window
@@ -152,6 +179,8 @@ int main() {
     shaders.push_back(&unlitShader);
     scratch::Shader litShader = scratch::Shader("./scratch/shaders/lit.vert", "./scratch/shaders/lit.frag");
     shaders.push_back(&litShader);
+    scratch::Shader selectionShader = scratch::Shader("./scratch/shaders/entity-selection.vert","./scratch/shaders/entity-selection.frag");
+    shaders.push_back(&selectionShader);
 
     std::cout << "Loading Models..." << std::endl;
     scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
@@ -161,7 +190,7 @@ int main() {
 
     std::cout << "Creating Entities..." << std::endl;
     entities.push_back(
-            scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f),
+            scratch::Entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
                     new scratch::ModelRenderable(nanosuitModel)));
     entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), new scratch::ModelRenderable(stoneModel)));
 
@@ -198,7 +227,7 @@ int main() {
         lastFrame = currentFrame;
 
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective<double>(glm::radians(60.0f), mWidth / mHeight, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective<double>(glm::radians(90.0f), mWidth / mHeight, 0.1f, 100.0f);
 
         std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
         for (size_t i = 0; i < entities.size(); i++) {
@@ -211,6 +240,10 @@ int main() {
                 toAdd[j].material->setFloat("material.shininess", 32.0f);
                 renderQueue.push_back(toAdd[j]);
             }
+        }
+
+        if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_1)) {
+            handleSelection(selectionShader, view, projection);
         }
 
         std::optional<scratch::Material> currentMaterial = {};

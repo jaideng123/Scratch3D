@@ -3,35 +3,35 @@
 //
 #pragma once
 
-#include <color/color.h>
-#include <shader/shader.h>
+namespace scratch {class Shader;}
+#include "color/color.h"
 #include "glm/glm.hpp"
 
 namespace scratch {
     class DirectionalLight {
         glm::vec3 direction;
-        Color ambient;
-        Color diffuse;
-        Color specular;
+        scratch::Color ambient;
+        scratch::Color diffuse;
+        scratch::Color specular;
 
     public:
-        DirectionalLight(const glm::vec3 &direction, const Color &ambient, const Color &diffuse, const Color &specular);
+        DirectionalLight(const glm::vec3 &direction, const scratch::Color &ambient, const scratch::Color &diffuse, const scratch::Color &specular);
 
         const glm::vec3 &getDirection() const;
 
         void setDirection(const glm::vec3 &direction);
 
-        const Color &getAmbient() const;
+        const scratch::Color &getAmbient() const;
 
-        void setAmbient(const Color &ambient);
+        void setAmbient(const scratch::Color &ambient);
 
-        const Color &getDiffuse() const;
+        const scratch::Color &getDiffuse() const;
 
-        void setDiffuse(const Color &diffuse);
+        void setDiffuse(const scratch::Color &diffuse);
 
-        const Color &getSpecular() const;
+        const scratch::Color &getSpecular() const;
 
-        void setSpecular(const Color &specular);
+        void setSpecular(const scratch::Color &specular);
 
         void ApplyToShader(Shader& shader);
     };

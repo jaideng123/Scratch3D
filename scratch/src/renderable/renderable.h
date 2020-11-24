@@ -7,7 +7,8 @@
 
 
 #include <vector>
-#include <mesh/mesh.hpp>
+namespace scratch {class Mesh;}
+
 
 namespace scratch {
     class Renderable {

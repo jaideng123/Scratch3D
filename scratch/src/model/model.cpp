@@ -6,14 +6,15 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "model.h"
+
 #include "shader/shader.h"
 #include "mesh/mesh.hpp"
+#include "material/material.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
-
-#include "model.h"
 
 unsigned int TextureFromFile(const std::string path, const std::string &directory, bool gamma = false);
 
@@ -23,6 +24,11 @@ glm::vec3 ConvertVector3(aiVector3D aiVec3);
 
 scratch::Model::Model(std::string path) {
     loadModel(path);
+}
+
+std::vector<scratch::Mesh> &scratch::Model::getMeshes()
+{
+    return meshes;
 }
 
 void scratch::Model::loadModel(std::string path) {

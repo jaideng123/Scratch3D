@@ -3,6 +3,7 @@
 //
 
 #include "modelRenderable.h"
+#include "model/model.h"
 
 scratch::ModelRenderable::ModelRenderable(scratch::Model &model) : model(model) {
     this->model = model;

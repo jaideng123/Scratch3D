@@ -6,11 +6,14 @@
 #define SCRATCH_MODELRENDERABLE_H
 
 
-#include "model/model.h"
+#include <vector>
 #include "renderable.h"
 
+namespace scratch {class Model;}
+namespace scratch {class Mesh;}
+
 namespace scratch {
-    class ModelRenderable : public Renderable {
+    class ModelRenderable : public scratch::Renderable {
     public:
         ModelRenderable(scratch::Model &model);
 

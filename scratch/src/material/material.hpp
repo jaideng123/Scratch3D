@@ -6,6 +6,7 @@
 #include <glad/glad.h> // holds all OpenGL type declarations
 
 #include "converter/stringConverter.h"
+#include "shader/shader.h"
 
 namespace scratch
 {
@@ -91,6 +92,12 @@ namespace scratch
             param.value = scratch::StringConverter::toString(value);
             parameters[name] = param;
         }
+
+        glm::mat4 getMat4(const std::string &name)
+        {
+            return scratch::StringConverter::parsemat4(parameters.find(name)->second.value);
+        }
+
 
         void setVec3(const std::string &name, glm::vec3 value)
         {

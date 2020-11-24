@@ -9,10 +9,12 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#include "shader/shader.h"
 #include "mesh/mesh.hpp"
 #include "material/material.hpp"
+
+namespace scratch {class Shader;}
+namespace scratch {class Material;}
+
 
 namespace scratch
 {
@@ -24,10 +26,7 @@ namespace scratch
 
         Model() = default;
 
-        std::vector<scratch::Mesh> &getMeshes()
-        {
-            return meshes;
-        }
+        std::vector<scratch::Mesh> &getMeshes();
 
     private:
         /*  Model Data  */
