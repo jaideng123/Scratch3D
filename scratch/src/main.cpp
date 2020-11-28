@@ -11,7 +11,6 @@
 
 
 // System Headers
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 // Standard Headers
@@ -30,7 +29,7 @@ std::vector<scratch::Shader *> shaders = std::vector<scratch::Shader *>();
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-float lastX = 400, lastY = 300;
+double lastX = 400, lastY = 300;
 bool firstMouse = true;
 
 // glfw: whenever the mouse moves, this callback is called
@@ -43,8 +42,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
         firstMouse = false;
     }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    double xoffset = xpos - lastX;
+    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
@@ -56,15 +55,12 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-unsigned int selectedEntityIndex = 0;
+unsigned int selectedEntityId = 0;
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
-        selectedEntityIndex = (selectedEntityIndex + 1) % entities.size();
-    }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        for (size_t i = 0; i < shaders.size(); i++) {
-            shaders[i]->reload();
+        for (auto &shader : shaders) {
+            shader->reload();
         }
     }
 }
@@ -83,22 +79,29 @@ void processInput(GLFWwindow *window) {
             camera.ProcessKeyboard(RIGHT, deltaTime);
     }
     float moveSpeed = 4.0f;
-    scratch::Entity *selectedEntity = &entities[selectedEntityIndex];
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 0, 1) * deltaTime * moveSpeed));
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 0, -1) * deltaTime * moveSpeed));
-    } else {
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
+    if (selectedEntityId > 0) {
+        scratch::Entity *selectedEntity = &entities[selectedEntityId - 1];
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+                selectedEntity->setPosition(
+                        selectedEntity->getPosition() + (glm::vec3(0, 0, 1) * deltaTime * moveSpeed));
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+                selectedEntity->setPosition(
+                        selectedEntity->getPosition() + (glm::vec3(0, 0, -1) * deltaTime * moveSpeed));
+        } else {
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+                selectedEntity->setPosition(
+                        selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+                selectedEntity->setPosition(
+                        selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(1, 0, 0) * deltaTime * moveSpeed));
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(1, 0, 0) * deltaTime * moveSpeed));
 }
 
 void GLAPIENTRY MessageCallback(GLenum source,
@@ -114,36 +117,37 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader shader) {
-    for (size_t i = 0; i < meshes.size(); i++) {
-        meshes[i].material->setShader(&shader);
+    for (auto &mesh : meshes) {
+        mesh.material->setShader(&shader);
     }
 }
 
-void handleSelection(scratch::Shader& selectionShader, glm::mat4& view, glm::mat4& projection){
+//TODO: Render to separate frame buffer
+//TODO: add support for > 255 ids
+void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat4 &projection) {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0, 0, 0, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for (size_t i = 0; i < entities.size(); i++) {
-        std::vector<scratch::Mesh> toAdd = entities[i].getRenderable()->getMeshes();
+        std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
         glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
-        for (size_t j = 0; j < toAdd.size(); j++) {
+        for (auto &mesh : meshesToRender) {
             selectionShader.use();
             selectionShader.setMat4("model", modelMatrix);
             selectionShader.setMat4("view", view);
             selectionShader.setMat4("projection", projection);
-            selectionShader.setUnsignedInt("entityId",i+1);
-            toAdd[j].Draw();
+            selectionShader.setUnsignedInt("entityId", i + 1);
+            mesh.Draw();
         }
     }
     GLubyte pixel[3];
-    glReadPixels(lastX,mHeight - lastY,1,1,GL_RGB,GL_UNSIGNED_BYTE,&pixel);
+    glReadPixels(lastX, mHeight - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
     printf("%u %u %u\n", pixel[0], pixel[1], pixel[2]);
-    selectedEntityIndex = pixel[0] - 1;
+    selectedEntityId = pixel[0];
 
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 int main() {
@@ -179,7 +183,8 @@ int main() {
     shaders.push_back(&unlitShader);
     scratch::Shader litShader = scratch::Shader("./scratch/shaders/lit.vert", "./scratch/shaders/lit.frag");
     shaders.push_back(&litShader);
-    scratch::Shader selectionShader = scratch::Shader("./scratch/shaders/entity-selection.vert","./scratch/shaders/entity-selection.frag");
+    scratch::Shader selectionShader = scratch::Shader("./scratch/shaders/entity-selection.vert",
+                                                      "./scratch/shaders/entity-selection.frag");
     shaders.push_back(&selectionShader);
 
     std::cout << "Loading Models..." << std::endl;
@@ -191,13 +196,15 @@ int main() {
     std::cout << "Creating Entities..." << std::endl;
     entities.push_back(
             scratch::Entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
-                    new scratch::ModelRenderable(nanosuitModel)));
+                            new scratch::ModelRenderable(nanosuitModel)));
     entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), new scratch::ModelRenderable(stoneModel)));
 
-    selectedEntityIndex = 0;
+    selectedEntityId = 0;
 
-    scratch::DirectionalLight directionalLight = scratch::DirectionalLight( glm::vec3(-0.2f, -1.0f, -0.3f), scratch::Color(glm::vec3(0.2f)),
-                                                                           scratch::Color(glm::vec3(0.5f)), scratch::WHITE);
+    scratch::DirectionalLight directionalLight = scratch::DirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
+                                                                           scratch::Color(glm::vec3(0.2f)),
+                                                                           scratch::Color(glm::vec3(0.5f)),
+                                                                           scratch::WHITE);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -227,18 +234,19 @@ int main() {
         lastFrame = currentFrame;
 
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective<double>(glm::radians(90.0f), mWidth / mHeight, 0.1f, 100.0f);
+        float aspectRatio = (mWidth * 1.0) / (mHeight * 1.0);
+        glm::mat4 projection = glm::perspective<double>(glm::radians(60.0f), aspectRatio, 0.1f, 100.0f);
 
         std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
         for (size_t i = 0; i < entities.size(); i++) {
-            std::vector<scratch::Mesh> toAdd = entities[i].getRenderable()->getMeshes();
-            bool highlighted = (selectedEntityIndex == i);
+            std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
+            bool highlighted = (selectedEntityId == i + 1);
             glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
-            for (size_t j = 0; j < toAdd.size(); j++) {
-                toAdd[j].material->setBool("highlighted", highlighted);
-                toAdd[j].material->setMat4("model", modelMatrix);
-                toAdd[j].material->setFloat("material.shininess", 32.0f);
-                renderQueue.push_back(toAdd[j]);
+            for (auto &mesh : meshesToRender) {
+                mesh.material->setBool("highlighted", highlighted);
+                mesh.material->setMat4("model", modelMatrix);
+                mesh.material->setFloat("material.shininess", 32.0f);
+                renderQueue.push_back(mesh);
             }
         }
 
@@ -247,16 +255,16 @@ int main() {
         }
 
         std::optional<scratch::Material> currentMaterial = {};
-        for (size_t i = 0; i < renderQueue.size(); i++) {
-            if (!currentMaterial.has_value() || renderQueue[i].material->ID != currentMaterial.value().ID) {
-                currentMaterial = *renderQueue[i].material;
+        for (auto &mesh : renderQueue) {
+            if (!currentMaterial.has_value() || mesh.material->ID != currentMaterial.value().ID) {
+                currentMaterial = *mesh.material;
                 currentMaterial.value().activate();
                 currentMaterial.value().getShader()->setMat4("view", view);
                 currentMaterial.value().getShader()->setMat4("projection", projection);
                 currentMaterial.value().getShader()->setVec3("viewPos", camera.getPosition());
                 directionalLight.ApplyToShader(*currentMaterial.value().getShader());
             }
-            renderQueue[i].Draw();
+            mesh.Draw();
         }
 
         processInput(mWindow);
