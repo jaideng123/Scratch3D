@@ -10,23 +10,23 @@ namespace scratch
     class Entity
     {
     private:
-        unsigned int _ID;
+        unsigned int _id;
         glm::vec3 _position;
         glm::vec3 _scale;
         scratch::Renderable *_renderable;
 
     public:
-        Entity(const glm::vec3 position, const glm::vec3 scale, scratch::Renderable *renderable)
+        Entity(const glm::vec3 position, const glm::vec3 scale, scratch::Renderable *renderable,const unsigned int id)
         {
             _position = position;
             _scale = scale;
             _renderable = renderable;
-            _ID = rand();
+            _id = id;
         }
 
         unsigned int getID()
         {
-            return _ID;
+            return _id;
         }
 
         scratch::Renderable* getRenderable()

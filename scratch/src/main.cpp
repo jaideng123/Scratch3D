@@ -20,6 +20,7 @@
 #include <vector>
 #include <optional>
 #include <lights/directionalLight.h>
+#include <entity/entity-factory.h>
 
 Camera camera = Camera();
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
@@ -136,7 +137,7 @@ void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat
             selectionShader.setMat4("model", modelMatrix);
             selectionShader.setMat4("view", view);
             selectionShader.setMat4("projection", projection);
-            selectionShader.setUnsignedInt("entityId", i + 1);
+            selectionShader.setUnsignedInt("entityId", entities[i].getID());
             mesh.Draw();
         }
     }
@@ -163,7 +164,7 @@ int main() {
 
     // Check for Valid Context
     if (mWindow == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Context");
+        fprintf(stderr, "Failed to Create OpenGL Contex");
         return EXIT_FAILURE;
     }
 
@@ -194,10 +195,12 @@ int main() {
     setDefaultShader(stoneModel.getMeshes(), litShader);
 
     std::cout << "Creating Entities..." << std::endl;
+    scratch::EntityFactory entityFactory = scratch::EntityFactory();
     entities.push_back(
-            scratch::Entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
-                            new scratch::ModelRenderable(nanosuitModel)));
-    entities.push_back(scratch::Entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), new scratch::ModelRenderable(stoneModel)));
+            entityFactory.create_entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
+                                        new scratch::ModelRenderable(nanosuitModel)));
+    entities.push_back(
+            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), new scratch::ModelRenderable(stoneModel)));
 
     selectedEntityId = 0;
 
