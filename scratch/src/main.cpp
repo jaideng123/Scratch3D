@@ -124,7 +124,6 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader shader
 }
 
 //TODO: Render to separate frame buffer
-//TODO: add support for > 255 ids
 void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat4 &projection) {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0, 0, 0, 1.0f);
@@ -144,7 +143,7 @@ void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat
     GLubyte pixel[3];
     glReadPixels(lastX, mHeight - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
     printf("%u %u %u\n", pixel[0], pixel[1], pixel[2]);
-    selectedEntityId = pixel[0];
+    selectedEntityId = pixel[0] | pixel[1] << 8 | pixel[2] << 16;
 
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

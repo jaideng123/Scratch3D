@@ -11,14 +11,15 @@ namespace scratch {
 
     class EntityFactory {
     private:
-        // TODO: increase this once I figure out how to encode higher ints
-        const unsigned int MAX_ID = 255;
+        const unsigned int MAX_ID = (255) + (255 << 8) + (255 << 16);
         unsigned int _lastGeneratedId;
+
         unsigned int generate_id();
 
     public:
         EntityFactory();
-        scratch::Entity create_entity(const glm::vec3 position, const glm::vec3 scale, scratch::Renderable *renderable);
+
+        scratch::Entity create_entity(glm::vec3 position, glm::vec3 scale, scratch::Renderable *renderable);
     };
 }
 

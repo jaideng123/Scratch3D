@@ -34,7 +34,8 @@ include_directories(
                     scratch/vendor/glad/include/
                     scratch/vendor/glfw/include/
                     scratch/vendor/glm/
-                    scratch/vendor/stb/)
+                    scratch/vendor/stb/
+        scratch/vendor/tiny-gizmo)
 
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c)
 file(GLOB PROJECT_HEADERS scratch/src/**/*.h* scratch/src/*.h*)
