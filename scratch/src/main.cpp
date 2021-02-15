@@ -190,18 +190,18 @@ int main() {
     glViewport(0, 0, mWidth, mHeight);
 
     std::cout << "Loading Shaders..." << std::endl;
-    scratch::Shader unlitShader = scratch::Shader("./scratch/shaders/unlit.vert", "./scratch/shaders/unlit.frag");
+    scratch::Shader unlitShader = scratch::Shader("./shaders/unlit.vert", "./shaders/unlit.frag");
     shaders.push_back(&unlitShader);
-    scratch::Shader litShader = scratch::Shader("./scratch/shaders/lit.vert", "./scratch/shaders/lit.frag");
+    scratch::Shader litShader = scratch::Shader("./shaders/lit.vert", "./shaders/lit.frag");
     shaders.push_back(&litShader);
-    scratch::Shader selectionShader = scratch::Shader("./scratch/shaders/entity-selection.vert",
-                                                      "./scratch/shaders/entity-selection.frag");
+    scratch::Shader selectionShader = scratch::Shader("./shaders/entity-selection.vert",
+                                                      "./shaders/entity-selection.frag");
     shaders.push_back(&selectionShader);
 
     std::cout << "Loading Models..." << std::endl;
-    scratch::Model nanosuitModel = scratch::Model("./scratch/models/nanosuit/nanosuit.obj");
+    scratch::Model nanosuitModel = scratch::Model("./models/nanosuit/nanosuit.obj");
     setDefaultShader(nanosuitModel.getMeshes(), litShader);
-    scratch::Model stoneModel = scratch::Model("./scratch/models/stone-man/Stone.obj");
+    scratch::Model stoneModel = scratch::Model("./models/stone-man/Stone.obj");
     setDefaultShader(stoneModel.getMeshes(), litShader);
 
     std::cout << "Creating Entities..." << std::endl;

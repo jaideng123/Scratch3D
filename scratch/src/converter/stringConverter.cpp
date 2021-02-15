@@ -14,12 +14,19 @@
 #define _strtoll_l _strtol_l
 #endif
 
+#ifdef _MSC_VER
 #define LC_NUMERIC_MASK LC_NUMERIC
 #define newlocale(cat, loc, base) _create_locale(cat, loc)
 #define locale_t _locale_t
 #define strtod_l _strtod_l
 #define strtol_l _strtol_l
 #define strnicmp _strnicmp
+#endif
+
+#ifdef __GNUC__
+#define strnicmp strncasecmp
+#endif
+
 
 
 #define OGRE_DEFAULT_LOCALE "C"

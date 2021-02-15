@@ -68,5 +68,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/scratch/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/scratch/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders
     DEPENDS ${PROJECT_SHADERS})
+
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/scratch/models $<TARGET_FILE_DIR:${PROJECT_NAME}>/models)

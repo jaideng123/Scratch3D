@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 
 scratch::Shader::Shader(const std::string vertexPath, const std::string fragmentPath)
@@ -116,6 +117,7 @@ int scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, in
 
 std::string scratch::Shader::readFileContents(std::string filename)
 {
+    std::cout<<std::filesystem::current_path() << std::endl;
     std::ifstream file;
     file.open(filename);
     std::stringstream fileStream;

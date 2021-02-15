@@ -14,7 +14,7 @@
 #define locale_t _locale_t
 #endif
 
-#if !defined(__MINGW32__)
+#ifdef _MSC_VER
 #define LC_NUMERIC_MASK LC_NUMERIC
 #define newlocale(cat, loc, base) _create_locale(cat, loc)
 #define locale_t _locale_t
