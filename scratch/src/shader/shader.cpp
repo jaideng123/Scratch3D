@@ -9,10 +9,12 @@ scratch::Shader::Shader(const std::string vertexPath, const std::string fragment
 {
     int vertexShader = generateAndCompileShader(vertexPath, GL_VERTEX_SHADER);
     _vertexPath = vertexPath;
+    std::cout << "Compiling Shader: " << _vertexPath << std::endl;
     checkSuccessfulShaderCompilation(vertexShader);
 
     int fragmentShader = generateAndCompileShader(fragmentPath, GL_FRAGMENT_SHADER);
     _fragmentPath = fragmentPath;
+    std::cout << "Compiling Shader: " << _fragmentPath << std::endl;
     checkSuccessfulShaderCompilation(fragmentShader);
 
     unsigned int shaderProgram;
@@ -104,7 +106,7 @@ int scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, in
     std::string shaderSource = readFileContents(sourceFileLocation);
     const char *vertexShaderSource = shaderSource.c_str();
     // Read source code into shader object
-    glShaderSource(shaderId, 1, &vertexShaderSource, NULL);
+    glShaderSource(shaderId, 1, &vertexShaderSource, nullptr);
 
     // Compile shader
     glCompileShader(shaderId);

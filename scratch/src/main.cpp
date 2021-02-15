@@ -56,6 +56,16 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
+bool checkSelection = false;
+
+// glfw: whenever the mouse is clicked, this callback is called
+// -------------------------------------------------------
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods){
+    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+        checkSelection = true;
+    }
+}
+
 unsigned int selectedEntityId = 0;
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -117,7 +127,7 @@ void GLAPIENTRY MessageCallback(GLenum source,
             type, severity, message);
 }
 
-void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader shader) {
+void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader) {
     for (auto &mesh : meshes) {
         mesh.material->setShader(&shader);
     }
@@ -176,6 +186,7 @@ int main() {
     // get cursor input
     glfwSetCursorPosCallback(mWindow, mouse_callback);
     glfwSetKeyCallback(mWindow, keyCallback);
+    glfwSetMouseButtonCallback(mWindow, mouse_button_callback);
     glViewport(0, 0, mWidth, mHeight);
 
     std::cout << "Loading Shaders..." << std::endl;
@@ -252,12 +263,13 @@ int main() {
             }
         }
 
-        if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_1)) {
+        if (checkSelection) {
             handleSelection(selectionShader, view, projection);
+            checkSelection = false;
         }
 
         std::optional<scratch::Material> currentMaterial = {};
-        for (auto &mesh : renderQueue) {
+        for (auto mesh : renderQueue) {
             if (!currentMaterial.has_value() || mesh.material->ID != currentMaterial.value().ID) {
                 currentMaterial = *mesh.material;
                 currentMaterial.value().activate();

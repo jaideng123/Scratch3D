@@ -12,11 +12,18 @@
 #ifdef __MINGW32__
 #define _strtoull_l _strtoul_l
 #define _strtoll_l _strtol_l
-#define newlocale(cat, loc, base) 0
+#endif
+
+#define LC_NUMERIC_MASK LC_NUMERIC
+#define newlocale(cat, loc, base) _create_locale(cat, loc)
 #define locale_t _locale_t
 #define strtod_l _strtod_l
 #define strtol_l _strtol_l
-#endif
+#define strnicmp _strnicmp
+
+
+#define OGRE_DEFAULT_LOCALE "C"
+
 
 locale_t scratch::StringConverter::_numLocale = newlocale(LC_NUMERIC_MASK, OGRE_DEFAULT_LOCALE, NULL);
 //-----------------------------------------------------------------------

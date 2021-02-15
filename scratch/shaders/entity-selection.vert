@@ -16,8 +16,9 @@ void main()
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 
     uint mask = 0xFF;
-    float r = (entityId & mask) / 255.0;
-    float g = ((entityId >> 8) & mask) / 255.0;
-    float b = ((entityId >> 16) & mask) / 255.0;
+    float r = float(entityId & mask) / 255.0;
+    float g = float((entityId >> 8) & mask) / 255.0;
+    float b = float((entityId >> 16) & mask) / 255.0;
     VertexColor = vec3(r, g, b);
+    int i = 0;
 }
