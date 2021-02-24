@@ -19,7 +19,7 @@ option(BUILD_UNIT_TESTS OFF)
 add_subdirectory(scratch/vendor/bullet3)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /std:c++17 /MP /incremental /Debug:fastlink")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /std:c++17 /MP /incremental")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unknown-pragmas -Wno-unused-parameter -std=c++17")
     if(NOT WIN32)
