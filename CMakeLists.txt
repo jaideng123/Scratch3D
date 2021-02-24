@@ -30,14 +30,20 @@ endif()
 include_directories(
     scratch/src/
     scratch/vendor/assimp/include/
-                    scratch/vendor/bullet3/src/
-                    scratch/vendor/glad/include/
-                    scratch/vendor/glfw/include/
-                    scratch/vendor/glm/
-                    scratch/vendor/stb/
-        scratch/vendor/tiny-gizmo)
+    scratch/vendor/bullet3/src/
+    scratch/vendor/glad/include/
+    scratch/vendor/glfw/include/
+    scratch/vendor/glm/
+    scratch/vendor/stb/
+    scratch/vendor/tiny-gizmo
+    scratch/vendor/imgui
+)
 
-file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c)
+file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
+        scratch/vendor/imgui/*.h
+        scratch/vendor/imgui/*.cpp
+        scratch/vendor/imgui/backends/imgui_impl_glfw.*
+        scratch/vendor/imgui/backends/imgui_impl_opengl3.*)
 file(GLOB PROJECT_HEADERS scratch/src/**/*.h* scratch/src/*.h*)
 file(GLOB PROJECT_SOURCES scratch/src/**/*.cpp scratch/src/*.cpp)
 file(GLOB PROJECT_SHADERS scratch/shader/*.comp

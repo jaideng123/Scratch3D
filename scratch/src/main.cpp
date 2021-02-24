@@ -3,15 +3,13 @@
 // Reference: https://github.com/nothings/stb/blob/master/stb_image.h#L4
 // To use stb_image, add this in *one* C++ source file.
 
-#include "shader/shader.h"
-#include "model/model.h"
-#include "camera/camera.hpp"
-#include "entity/entity.hpp"
-#include "renderable/modelRenderable.h"
-
-
 // System Headers
 #include <GLFW/glfw3.h>
+
+// Dear IMGUI Headers
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 // Standard Headers
 #include <cstdio>
@@ -19,8 +17,16 @@
 #include <iostream>
 #include <vector>
 #include <optional>
-#include <lights/directionalLight.h>
-#include <entity/entity-factory.h>
+
+// Local Headers
+#include "lights/directionalLight.h"
+#include "entity/entity-factory.h"
+#include "shader/shader.h"
+#include "model/model.h"
+#include "camera/camera.hpp"
+#include "entity/entity.hpp"
+#include "renderable/modelRenderable.h"
+
 
 Camera camera = Camera();
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
@@ -36,6 +42,9 @@ bool firstMouse = true;
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    if (ImGui::GetIO().WantCaptureMouse) {
+        return;
+    }
 
     if (firstMouse) {
         lastX = xpos;
@@ -60,8 +69,11 @@ bool checkSelection = false;
 
 // glfw: whenever the mouse is clicked, this callback is called
 // -------------------------------------------------------
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods){
-    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    if (ImGui::GetIO().WantCaptureMouse) {
+        return;
+    }
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         checkSelection = true;
     }
 }
@@ -69,6 +81,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 unsigned int selectedEntityId = 0;
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (ImGui::GetIO().WantCaptureKeyboard) {
+        return;
+    }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         for (auto &shader : shaders) {
             shader->reload();
@@ -77,7 +92,15 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 }
 
 void processInput(GLFWwindow *window) {
+    if (ImGui::GetIO().WantCaptureMouse) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        return;
+    }
+    if (ImGui::GetIO().WantCaptureKeyboard) {
+        return;
+    }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -88,6 +111,8 @@ void processInput(GLFWwindow *window) {
             camera.ProcessKeyboard(LEFT, deltaTime);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, deltaTime);
+    } else {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     float moveSpeed = 4.0f;
     if (selectedEntityId > 0) {
@@ -189,6 +214,20 @@ int main() {
     glfwSetMouseButtonCallback(mWindow, mouse_button_callback);
     glViewport(0, 0, mWidth, mHeight);
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(mWindow, true);
+    const char *glsl_version = "#version 400 core";
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     std::cout << "Loading Shaders..." << std::endl;
     scratch::Shader unlitShader = scratch::Shader("./shaders/unlit.vert", "./shaders/unlit.frag");
     shaders.push_back(&unlitShader);
@@ -230,11 +269,16 @@ int main() {
     std::cout << "starting rendering loop" << std::endl;
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false) {
-        if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_2)) {
-            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        } else {
-            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        bool showDemoWindow = true;
+        ImGui::ShowDemoWindow(&showDemoWindow);
+
+        ImGui::Render();
         // Background Fill Color
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -281,11 +325,12 @@ int main() {
             mesh.Draw();
         }
 
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         processInput(mWindow);
 
         // Flip Buffers and Draw
         glfwSwapBuffers(mWindow);
-        glfwPollEvents();
     }
     glfwTerminate();
     return EXIT_SUCCESS;
