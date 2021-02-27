@@ -20,3 +20,6 @@
 [submodule "scratch/vendor/imgui"]
 	path = scratch/vendor/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "scratch/vendor/ImGuizmo"]
+	path = scratch/vendor/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

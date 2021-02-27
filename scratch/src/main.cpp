@@ -11,6 +11,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+//ImGuizmo Headers
+#include "ImGuizmo.h"
+
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
@@ -158,6 +161,61 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shade
     }
 }
 
+void editTransform(Camera &camera, glm::mat4 &matrix) {
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+    if (ImGui::IsKeyPressed(90))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(69))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(82)) // r Key
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), matrixTranslation, matrixRotation, matrixScale);
+    ImGui::InputFloat3("Tr", matrixTranslation);
+    ImGui::InputFloat3("Rt", matrixRotation);
+    ImGui::InputFloat3("Sc", matrixScale);
+    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, glm::value_ptr(matrix));
+
+    if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
+        if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+            mCurrentGizmoMode = ImGuizmo::LOCAL;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+            mCurrentGizmoMode = ImGuizmo::WORLD;
+    }
+    static bool useSnap(false);
+    if (ImGui::IsKeyPressed(83))
+        useSnap = !useSnap;
+    ImGui::Checkbox("", &useSnap);
+    ImGui::SameLine();
+    glm::vec3 snap = {1.f, 1.f, 1.f};
+    switch (mCurrentGizmoOperation) {
+        case ImGuizmo::TRANSLATE:
+            ImGui::InputFloat3("Snap", &snap.x);
+            break;
+        case ImGuizmo::ROTATE:
+            ImGui::InputFloat("Angle Snap", &snap.x);
+            break;
+        case ImGuizmo::SCALE:
+            ImGui::InputFloat("Scale Snap", &snap.x);
+            break;
+    }
+    ImGuiIO &io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::Manipulate(glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()),
+                         mCurrentGizmoOperation, mCurrentGizmoMode, glm::value_ptr(matrix), NULL,
+                         useSnap ? &snap.x : NULL);
+}
+
 //TODO: Render to separate frame buffer
 void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat4 &projection) {
     glDisable(GL_FRAMEBUFFER_SRGB);
@@ -275,8 +333,15 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        bool showDemoWindow = true;
-        ImGui::ShowDemoWindow(&showDemoWindow);
+//        bool showDemoWindow = true;
+//        ImGui::ShowDemoWindow(&showDemoWindow);
+        ImGuizmo::BeginFrame();
+
+        if (selectedEntityId != 0) {
+            glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
+            editTransform(camera, matrix);
+        }
+
 
         ImGui::Render();
         // Background Fill Color
@@ -291,8 +356,7 @@ int main() {
         lastFrame = currentFrame;
 
         glm::mat4 view = camera.GetViewMatrix();
-        float aspectRatio = (mWidth * 1.0) / (mHeight * 1.0);
-        glm::mat4 projection = glm::perspective<double>(glm::radians(60.0f), aspectRatio, 0.1f, 100.0f);
+        glm::mat4 projection = camera.GetProjectionMatrix();
 
         std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
         for (size_t i = 0; i < entities.size(); i++) {
