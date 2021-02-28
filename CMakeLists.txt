@@ -35,7 +35,6 @@ include_directories(
     scratch/vendor/glfw/include/
     scratch/vendor/glm/
     scratch/vendor/stb/
-    scratch/vendor/tiny-gizmo
     scratch/vendor/imgui
     scratch/vendor/ImGuizmo
 )
