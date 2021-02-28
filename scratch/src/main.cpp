@@ -117,30 +117,6 @@ void processInput(GLFWwindow *window) {
     } else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-    float moveSpeed = 4.0f;
-    if (selectedEntityId > 0) {
-        scratch::Entity *selectedEntity = &entities[selectedEntityId - 1];
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-                selectedEntity->setPosition(
-                        selectedEntity->getPosition() + (glm::vec3(0, 0, 1) * deltaTime * moveSpeed));
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-                selectedEntity->setPosition(
-                        selectedEntity->getPosition() + (glm::vec3(0, 0, -1) * deltaTime * moveSpeed));
-        } else {
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-                selectedEntity->setPosition(
-                        selectedEntity->getPosition() + (glm::vec3(0, 1, 0) * deltaTime * moveSpeed));
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-                selectedEntity->setPosition(
-                        selectedEntity->getPosition() + (glm::vec3(0, -1, 0) * deltaTime * moveSpeed));
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(-1, 0, 0) * deltaTime * moveSpeed));
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            selectedEntity->setPosition(selectedEntity->getPosition() + (glm::vec3(1, 0, 0) * deltaTime * moveSpeed));
-    }
 }
 
 void GLAPIENTRY MessageCallback(GLenum source,
@@ -161,8 +137,8 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shade
     }
 }
 
-void editTransform(Camera &camera, glm::mat4 &matrix) {
-    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+glm::mat4 editTransform(Camera &camera, glm::mat4 &matrix) {
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
     if (ImGui::IsKeyPressed(90))
         mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
@@ -178,12 +154,14 @@ void editTransform(Camera &camera, glm::mat4 &matrix) {
     ImGui::SameLine();
     if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
         mCurrentGizmoOperation = ImGuizmo::SCALE;
+
     float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), matrixTranslation, matrixRotation, matrixScale);
+    float* matrixPointer = glm::value_ptr(matrix);
+    ImGuizmo::DecomposeMatrixToComponents(matrixPointer, matrixTranslation, matrixRotation, matrixScale);
     ImGui::InputFloat3("Tr", matrixTranslation);
     ImGui::InputFloat3("Rt", matrixRotation);
     ImGui::InputFloat3("Sc", matrixScale);
-    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, glm::value_ptr(matrix));
+    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrixPointer);
 
     if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
         if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
@@ -197,7 +175,7 @@ void editTransform(Camera &camera, glm::mat4 &matrix) {
         useSnap = !useSnap;
     ImGui::Checkbox("", &useSnap);
     ImGui::SameLine();
-    glm::vec3 snap = {1.f, 1.f, 1.f};
+    glm::vec3 snap = {1.0f, 1.0f, 1.0f};
     switch (mCurrentGizmoOperation) {
         case ImGuizmo::TRANSLATE:
             ImGui::InputFloat3("Snap", &snap.x);
@@ -209,11 +187,11 @@ void editTransform(Camera &camera, glm::mat4 &matrix) {
             ImGui::InputFloat("Scale Snap", &snap.x);
             break;
     }
-    ImGuiIO &io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
     ImGuizmo::Manipulate(glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()),
-                         mCurrentGizmoOperation, mCurrentGizmoMode, glm::value_ptr(matrix), NULL,
+                         mCurrentGizmoOperation, mCurrentGizmoMode, matrixPointer, NULL,
                          useSnap ? &snap.x : NULL);
+    return glm::make_mat4(matrixPointer);
 }
 
 //TODO: Render to separate frame buffer
@@ -337,9 +315,10 @@ int main() {
 //        ImGui::ShowDemoWindow(&showDemoWindow);
         ImGuizmo::BeginFrame();
 
+        // Edit Transform
         if (selectedEntityId != 0) {
             glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
-            editTransform(camera, matrix);
+            entities[selectedEntityId - 1].setTransform(editTransform(camera, matrix));
         }
 
 
