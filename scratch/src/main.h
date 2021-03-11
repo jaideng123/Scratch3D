@@ -5,10 +5,16 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <btBulletDynamicsCommon.h>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <memory>
+#include <camera/camera.h>
+#include <GLFW/glfw3.h>
+namespace scratch {
 // Define Some Constants
-const int mWidth = 1280;
-const int mHeight = 720;
+    const int defaultWidth = 1280;
+    const int defaultHeight = 720;
+
+    inline Camera* MainCamera = nullptr;
+    inline GLFWwindow* MainWindow = nullptr;
+}

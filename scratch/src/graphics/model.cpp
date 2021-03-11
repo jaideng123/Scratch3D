@@ -8,9 +8,9 @@
 
 #include "model.h"
 
-#include "shader/shader.h"
-#include "mesh/mesh.hpp"
-#include "material/material.hpp"
+#include "shader.h"
+#include "graphics/mesh.hpp"
+#include "graphics/material.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 

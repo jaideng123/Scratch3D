@@ -9,8 +9,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "mesh/mesh.hpp"
-#include "material/material.hpp"
+#include "graphics/mesh.hpp"
+#include "graphics/material.hpp"
 
 namespace scratch {class Shader;}
 namespace scratch {class Material;}

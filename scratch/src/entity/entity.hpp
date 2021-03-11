@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <renderable/renderable.h>
-#include "model/model.h"
+#include "graphics/renderable.h"
+#include "graphics/model.h"
 
 namespace scratch {
     class Entity {

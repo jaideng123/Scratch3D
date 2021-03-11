@@ -11,8 +11,8 @@
 #include <iostream>
 #include <vector>
 
-#include "shader/shader.h"
-#include "material/material.hpp"
+#include "shader.h"
+#include "graphics/material.hpp"
 
 namespace scratch
 {

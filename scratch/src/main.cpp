@@ -20,20 +20,16 @@
 #include <iostream>
 #include <vector>
 #include <optional>
+#include <graphics/render_system.h>
 
 // Local Headers
 #include "lights/directionalLight.h"
 #include "entity/entity-factory.h"
-#include "shader/shader.h"
-#include "model/model.h"
-#include "camera/camera.hpp"
-#include "entity/entity.hpp"
-#include "renderable/modelRenderable.h"
+#include "camera/camera.h"
+#include "graphics/modelRenderable.h"
+#include "scene/scene.h"
 
-
-Camera camera = Camera();
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
-
 std::vector<scratch::Shader *> shaders = std::vector<scratch::Shader *>();
 
 float deltaTime = 0.0f; // Time between current frame and last frame
@@ -65,7 +61,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
         return;
     }
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+    scratch::MainCamera->ProcessMouseMovement(xoffset, yoffset);
 }
 
 bool checkSelection = false;
@@ -94,41 +90,29 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     }
 }
 
-void processInput(GLFWwindow *window) {
+void processInput() {
     if (ImGui::GetIO().WantCaptureMouse) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         return;
     }
     if (ImGui::GetIO().WantCaptureKeyboard) {
         return;
     }
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            camera.ProcessKeyboard(FORWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            camera.ProcessKeyboard(BACKWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            camera.ProcessKeyboard(LEFT, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetMouseButton(scratch::MainWindow, GLFW_MOUSE_BUTTON_2)) {
+        glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(scratch::MainWindow, true);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_W) == GLFW_PRESS)
+            scratch::MainCamera->ProcessKeyboard(scratch::FORWARD, deltaTime);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_S) == GLFW_PRESS)
+            scratch::MainCamera->ProcessKeyboard(scratch::BACKWARD, deltaTime);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_A) == GLFW_PRESS)
+            scratch::MainCamera->ProcessKeyboard(scratch::LEFT, deltaTime);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_D) == GLFW_PRESS)
+            scratch::MainCamera->ProcessKeyboard(scratch::RIGHT, deltaTime);
     } else {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-}
-
-void GLAPIENTRY MessageCallback(GLenum source,
-                                GLenum type,
-                                GLuint id,
-                                GLenum severity,
-                                GLsizei length,
-                                const GLchar *message,
-                                const void *userParam) {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
 }
 
 void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader) {
@@ -137,7 +121,7 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shade
     }
 }
 
-glm::mat4 editTransform(Camera &camera, glm::mat4 &matrix) {
+glm::mat4 editTransform(scratch::Camera &camera, glm::mat4 &matrix) {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
     if (ImGui::IsKeyPressed(90))
@@ -156,7 +140,7 @@ glm::mat4 editTransform(Camera &camera, glm::mat4 &matrix) {
         mCurrentGizmoOperation = ImGuizmo::SCALE;
 
     float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    float* matrixPointer = glm::value_ptr(matrix);
+    float *matrixPointer = glm::value_ptr(matrix);
     ImGuizmo::DecomposeMatrixToComponents(matrixPointer, matrixTranslation, matrixRotation, matrixScale);
     ImGui::InputFloat3("Tr", matrixTranslation);
     ImGui::InputFloat3("Rt", matrixRotation);
@@ -195,10 +179,12 @@ glm::mat4 editTransform(Camera &camera, glm::mat4 &matrix) {
 }
 
 //TODO: Render to separate frame buffer
-void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat4 &projection) {
+void handleSelection(scratch::Shader &selectionShader) {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0, 0, 0, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4 view = scratch::MainCamera->GetViewMatrix();
+    glm::mat4 projection = scratch::MainCamera->GetProjectionMatrix();
     for (size_t i = 0; i < entities.size(); i++) {
         std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
         glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
@@ -212,7 +198,9 @@ void handleSelection(scratch::Shader &selectionShader, glm::mat4 &view, glm::mat
         }
     }
     GLubyte pixel[3];
-    glReadPixels(lastX, mHeight - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
+    int width, height;
+    glfwGetWindowSize(scratch::MainWindow, &width, &height);
+    glReadPixels(lastX, height - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
     printf("%u %u %u\n", pixel[0], pixel[1], pixel[2]);
     selectedEntityId = pixel[0] | pixel[1] << 8 | pixel[2] << 16;
 
@@ -230,25 +218,24 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    auto mWindow = glfwCreateWindow(mWidth, mHeight, "Scratch", nullptr, nullptr);
+    scratch::MainWindow = glfwCreateWindow(scratch::defaultWidth, scratch::defaultHeight, "Scratch", nullptr, nullptr);
 
     // Check for Valid Context
-    if (mWindow == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Contex");
+    if (scratch::MainWindow == nullptr) {
+        fprintf(stderr, "Failed to Create OpenGL Context");
         return EXIT_FAILURE;
     }
 
     // Create Context and Load OpenGL Functions
-    glfwMakeContextCurrent(mWindow);
-    gladLoadGL();
-    fprintf(stdout, "OpenGL %s\n", glGetString(GL_VERSION));
+    glfwMakeContextCurrent(scratch::MainWindow);
 
     // hide + capture cursor
     // get cursor input
-    glfwSetCursorPosCallback(mWindow, mouse_callback);
-    glfwSetKeyCallback(mWindow, keyCallback);
-    glfwSetMouseButtonCallback(mWindow, mouse_button_callback);
-    glViewport(0, 0, mWidth, mHeight);
+    glfwSetCursorPosCallback(scratch::MainWindow, mouse_callback);
+    glfwSetKeyCallback(scratch::MainWindow, keyCallback);
+    glfwSetMouseButtonCallback(scratch::MainWindow, mouse_button_callback);
+
+    RenderSystem::setup();
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -260,7 +247,7 @@ int main() {
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(mWindow, true);
+    ImGui_ImplGlfw_InitForOpenGL(scratch::MainWindow, true);
     const char *glsl_version = "#version 400 core";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -285,7 +272,8 @@ int main() {
             entityFactory.create_entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
                                         new scratch::ModelRenderable(nanosuitModel)));
     entities.push_back(
-            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f), new scratch::ModelRenderable(stoneModel)));
+            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f),
+                                        new scratch::ModelRenderable(stoneModel)));
 
     selectedEntityId = 0;
 
@@ -294,17 +282,11 @@ int main() {
                                                                            scratch::Color(glm::vec3(0.5f)),
                                                                            scratch::WHITE);
 
-    glEnable(GL_DEPTH_TEST);
-
-    // Enable Gamma correction (physically correct colors)
-    glEnable(GL_FRAMEBUFFER_SRGB);
-
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(MessageCallback, nullptr);
+    scratch::MainCamera = new scratch::Camera();
 
     std::cout << "starting rendering loop" << std::endl;
     // Rendering Loop
-    while (glfwWindowShouldClose(mWindow) == false) {
+    while (glfwWindowShouldClose(scratch::MainWindow) == false) {
         glfwPollEvents();
 
         // Start the Dear ImGui frame
@@ -318,24 +300,22 @@ int main() {
         // Edit Transform
         if (selectedEntityId != 0) {
             glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
-            entities[selectedEntityId - 1].setTransform(editTransform(camera, matrix));
+            entities[selectedEntityId - 1].setTransform(editTransform(*scratch::MainCamera, matrix));
         }
 
-
         ImGui::Render();
-        // Background Fill Color
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(mWindow, true);
+        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(scratch::MainWindow, true);
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = camera.GetProjectionMatrix();
+        if (checkSelection) {
+            handleSelection(selectionShader);
+            checkSelection = false;
+        }
 
         std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
         for (size_t i = 0; i < entities.size(); i++) {
@@ -350,30 +330,15 @@ int main() {
             }
         }
 
-        if (checkSelection) {
-            handleSelection(selectionShader, view, projection);
-            checkSelection = false;
-        }
+        RenderSystem::render(renderQueue, directionalLight);
 
-        std::optional<scratch::Material> currentMaterial = {};
-        for (auto mesh : renderQueue) {
-            if (!currentMaterial.has_value() || mesh.material->ID != currentMaterial.value().ID) {
-                currentMaterial = *mesh.material;
-                currentMaterial.value().activate();
-                currentMaterial.value().getShader()->setMat4("view", view);
-                currentMaterial.value().getShader()->setMat4("projection", projection);
-                currentMaterial.value().getShader()->setVec3("viewPos", camera.getPosition());
-                directionalLight.ApplyToShader(*currentMaterial.value().getShader());
-            }
-            mesh.Draw();
-        }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        processInput(mWindow);
+        processInput();
 
         // Flip Buffers and Draw
-        glfwSwapBuffers(mWindow);
+        glfwSwapBuffers(scratch::MainWindow);
     }
     glfwTerminate();
     return EXIT_SUCCESS;

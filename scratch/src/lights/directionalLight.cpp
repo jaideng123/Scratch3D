@@ -3,7 +3,7 @@
 //
 
 #include "directionalLight.h"
-#include "shader/shader.h"
+#include "graphics/shader.h"
 
 scratch::DirectionalLight::DirectionalLight(const glm::vec3 &direction, const scratch::Color &ambient,
                                             const scratch::Color &diffuse, const scratch::Color &specular) : direction(

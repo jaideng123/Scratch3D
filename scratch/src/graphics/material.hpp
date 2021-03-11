@@ -6,7 +6,7 @@
 #include <glad/glad.h> // holds all OpenGL type declarations
 
 #include "converter/stringConverter.h"
-#include "shader/shader.h"
+#include "shader.h"
 
 namespace scratch
 {
