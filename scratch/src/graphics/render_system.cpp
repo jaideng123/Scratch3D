@@ -3,13 +3,15 @@
 //
 
 #include "render_system.h"
+
 #include <GLFW/glfw3.h>
-#include <glad/glad.h>
 #include <cstdio>
 #include <optional>
-#include <lights/directionalLight.h>
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <ImGuizmo.h>
 #include "main.h"
-#include "mesh.hpp"
 
 
 void GLAPIENTRY MessageCallback(GLenum source,
@@ -25,6 +27,24 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 void RenderSystem::setup() {
+    // stbi_set_flip_vertically_on_load(true);
+    // Load GLFW and Create a Window
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    scratch::MainWindow = glfwCreateWindow(scratch::defaultWidth, scratch::defaultHeight, "Scratch", nullptr, nullptr);
+
+    // Check for Valid Context
+    if (scratch::MainWindow == nullptr) {
+        throw std::runtime_error("Failed to Create OpenGL Context");
+    }
+
+    // Create Context and Load OpenGL Functions
+    glfwMakeContextCurrent(scratch::MainWindow);
+
     gladLoadGL();
     fprintf(stdout, "OpenGL %s\n", glGetString(GL_VERSION));
     int width, height;
@@ -37,6 +57,20 @@ void RenderSystem::setup() {
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, nullptr);
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(scratch::MainWindow, true);
+    const char *glsl_version = "#version 400 core";
+    ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
 void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch::DirectionalLight &directionalLight) {
@@ -46,7 +80,7 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
 
     glm::mat4 view = scratch::MainCamera->GetViewMatrix();
     glm::mat4 projection = scratch::MainCamera->GetProjectionMatrix();
-    glm::vec3 viewPosition =  scratch::MainCamera->getPosition();
+    glm::vec3 viewPosition = scratch::MainCamera->getPosition();
 
     std::optional<scratch::Material> currentMaterial = {};
     for (auto mesh : renderQueue) {
@@ -60,4 +94,26 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
         }
         mesh.Draw();
     }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void RenderSystem::startFrame() {
+    int width, height;
+    glfwGetWindowSize(scratch::MainWindow, &width, &height);
+    glViewport(0, 0, width, height);
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+//        bool showDemoWindow = true;
+//        ImGui::ShowDemoWindow(&showDemoWindow);
+    ImGuizmo::BeginFrame();
+}
+
+void RenderSystem::endFrame() {
+    // Flip Buffers and Draw
+    glfwSwapBuffers(scratch::MainWindow);
 }

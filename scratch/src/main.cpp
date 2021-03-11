@@ -1,15 +1,8 @@
 // Local Headers
 #include "main.h"
-// Reference: https://github.com/nothings/stb/blob/master/stb_image.h#L4
-// To use stb_image, add this in *one* C++ source file.
-
-// System Headers
-#include <GLFW/glfw3.h>
 
 // Dear IMGUI Headers
 #include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
 
 //ImGuizmo Headers
 #include "ImGuizmo.h"
@@ -20,23 +13,127 @@
 #include <iostream>
 #include <vector>
 #include <optional>
-#include <graphics/render_system.h>
 
 // Local Headers
-#include "lights/directionalLight.h"
 #include "entity/entity-factory.h"
-#include "camera/camera.h"
 #include "graphics/modelRenderable.h"
-#include "scene/scene.h"
+#include "time/scratch_time.h"
+#include "graphics/render_system.h"
+
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+void handleInput();
+void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader);
+glm::mat4 editTransform(scratch::Camera &camera, glm::mat4 &matrix);
+void handleSelection(scratch::Shader &selectionShader);
 
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
 std::vector<scratch::Shader *> shaders = std::vector<scratch::Shader *>();
 
-float deltaTime = 0.0f; // Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
-
 double lastX = 400, lastY = 300;
 bool firstMouse = true;
+
+unsigned int selectedEntityId = 0;
+bool checkSelection = false;
+
+int main() {
+    RenderSystem::setup();
+    scratch::Time::InitializeClock();
+
+    // Setup various input callbacks
+    glfwSetCursorPosCallback(scratch::MainWindow, mouse_callback);
+    glfwSetKeyCallback(scratch::MainWindow, keyCallback);
+    glfwSetMouseButtonCallback(scratch::MainWindow, mouse_button_callback);
+
+
+    std::cout << "Loading Shaders..." << std::endl;
+    scratch::Shader unlitShader = scratch::Shader("./shaders/unlit.vert", "./shaders/unlit.frag");
+    shaders.push_back(&unlitShader);
+    scratch::Shader litShader = scratch::Shader("./shaders/lit.vert", "./shaders/lit.frag");
+    shaders.push_back(&litShader);
+    scratch::Shader selectionShader = scratch::Shader("./shaders/entity-selection.vert",
+                                                      "./shaders/entity-selection.frag");
+    shaders.push_back(&selectionShader);
+
+    std::cout << "Loading Models..." << std::endl;
+    scratch::Model nanosuitModel = scratch::Model("./models/nanosuit/nanosuit.obj");
+    setDefaultShader(nanosuitModel.getMeshes(), litShader);
+    scratch::Model stoneModel = scratch::Model("./models/stone-man/Stone.obj");
+    setDefaultShader(stoneModel.getMeshes(), litShader);
+
+    std::cout << "Creating Entities..." << std::endl;
+    scratch::EntityFactory entityFactory = scratch::EntityFactory();
+    entities.push_back(
+            entityFactory.create_entity(glm::vec3(-2, 0, 0), glm::vec3(0.2f),
+                                        new scratch::ModelRenderable(nanosuitModel)));
+    entities.push_back(
+            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f),
+                                        new scratch::ModelRenderable(stoneModel)));
+
+    selectedEntityId = 0;
+
+    scratch::DirectionalLight directionalLight = scratch::DirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
+                                                                           scratch::Color(glm::vec3(0.2f)),
+                                                                           scratch::Color(glm::vec3(0.5f)),
+                                                                           scratch::WHITE);
+
+    scratch::MainCamera = new scratch::Camera();
+
+    std::cout << "starting rendering loop" << std::endl;
+    // Rendering Loop
+    while (glfwWindowShouldClose(scratch::MainWindow) == false) {
+        glfwPollEvents();
+        scratch::Time::UpdateClock();
+
+        handleInput();
+
+        RenderSystem::startFrame();
+
+        // Edit Transform
+        if (selectedEntityId != 0) {
+            glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
+            entities[selectedEntityId - 1].setTransform(editTransform(*scratch::MainCamera, matrix));
+        }
+
+        if (checkSelection) {
+            handleSelection(selectionShader);
+            checkSelection = false;
+        }
+
+        std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
+        for (size_t i = 0; i < entities.size(); i++) {
+            std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
+            bool highlighted = (selectedEntityId == i + 1);
+            glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
+            for (auto &mesh : meshesToRender) {
+                mesh.material->setBool("highlighted", highlighted);
+                mesh.material->setMat4("model", modelMatrix);
+                mesh.material->setFloat("material.shininess", 32.0f);
+                renderQueue.push_back(mesh);
+            }
+        }
+
+        RenderSystem::render(renderQueue, directionalLight);
+
+        RenderSystem::endFrame();
+    }
+    glfwTerminate();
+    return EXIT_SUCCESS;
+}
+
+
+// glfw: whenever the mouse is clicked, this callback is called
+// -------------------------------------------------------
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    if (ImGui::GetIO().WantCaptureMouse) {
+        return;
+    }
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        checkSelection = true;
+    }
+}
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -64,21 +161,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     scratch::MainCamera->ProcessMouseMovement(xoffset, yoffset);
 }
 
-bool checkSelection = false;
-
-// glfw: whenever the mouse is clicked, this callback is called
-// -------------------------------------------------------
-void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-    if (ImGui::GetIO().WantCaptureMouse) {
-        return;
-    }
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        checkSelection = true;
-    }
-}
-
-unsigned int selectedEntityId = 0;
-
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (ImGui::GetIO().WantCaptureKeyboard) {
         return;
@@ -90,7 +172,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     }
 }
 
-void processInput() {
+void handleInput() {
+    if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(scratch::MainWindow, true);
+    }
     if (ImGui::GetIO().WantCaptureMouse) {
         glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         return;
@@ -103,13 +188,13 @@ void processInput() {
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(scratch::MainWindow, true);
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_W) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::FORWARD, deltaTime);
+            scratch::MainCamera->ProcessKeyboard(scratch::FORWARD, scratch::Time::GetDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_S) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::BACKWARD, deltaTime);
+            scratch::MainCamera->ProcessKeyboard(scratch::BACKWARD, scratch::Time::GetDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_A) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::LEFT, deltaTime);
+            scratch::MainCamera->ProcessKeyboard(scratch::LEFT, scratch::Time::GetDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_D) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::RIGHT, deltaTime);
+            scratch::MainCamera->ProcessKeyboard(scratch::RIGHT, scratch::Time::GetDeltaTime());
     } else {
         glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
@@ -179,6 +264,7 @@ glm::mat4 editTransform(scratch::Camera &camera, glm::mat4 &matrix) {
 }
 
 //TODO: Render to separate frame buffer
+//TODO: break this off
 void handleSelection(scratch::Shader &selectionShader) {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0, 0, 0, 1.0f);
@@ -207,139 +293,4 @@ void handleSelection(scratch::Shader &selectionShader) {
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-int main() {
-    // stbi_set_flip_vertically_on_load(true);
-    // Load GLFW and Create a Window
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    scratch::MainWindow = glfwCreateWindow(scratch::defaultWidth, scratch::defaultHeight, "Scratch", nullptr, nullptr);
-
-    // Check for Valid Context
-    if (scratch::MainWindow == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Context");
-        return EXIT_FAILURE;
-    }
-
-    // Create Context and Load OpenGL Functions
-    glfwMakeContextCurrent(scratch::MainWindow);
-
-    // hide + capture cursor
-    // get cursor input
-    glfwSetCursorPosCallback(scratch::MainWindow, mouse_callback);
-    glfwSetKeyCallback(scratch::MainWindow, keyCallback);
-    glfwSetMouseButtonCallback(scratch::MainWindow, mouse_button_callback);
-
-    RenderSystem::setup();
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void) io;
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(scratch::MainWindow, true);
-    const char *glsl_version = "#version 400 core";
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    std::cout << "Loading Shaders..." << std::endl;
-    scratch::Shader unlitShader = scratch::Shader("./shaders/unlit.vert", "./shaders/unlit.frag");
-    shaders.push_back(&unlitShader);
-    scratch::Shader litShader = scratch::Shader("./shaders/lit.vert", "./shaders/lit.frag");
-    shaders.push_back(&litShader);
-    scratch::Shader selectionShader = scratch::Shader("./shaders/entity-selection.vert",
-                                                      "./shaders/entity-selection.frag");
-    shaders.push_back(&selectionShader);
-
-    std::cout << "Loading Models..." << std::endl;
-    scratch::Model nanosuitModel = scratch::Model("./models/nanosuit/nanosuit.obj");
-    setDefaultShader(nanosuitModel.getMeshes(), litShader);
-    scratch::Model stoneModel = scratch::Model("./models/stone-man/Stone.obj");
-    setDefaultShader(stoneModel.getMeshes(), litShader);
-
-    std::cout << "Creating Entities..." << std::endl;
-    scratch::EntityFactory entityFactory = scratch::EntityFactory();
-    entities.push_back(
-            entityFactory.create_entity(glm::vec3(0, 5, 0), glm::vec3(0.2f),
-                                        new scratch::ModelRenderable(nanosuitModel)));
-    entities.push_back(
-            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f),
-                                        new scratch::ModelRenderable(stoneModel)));
-
-    selectedEntityId = 0;
-
-    scratch::DirectionalLight directionalLight = scratch::DirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
-                                                                           scratch::Color(glm::vec3(0.2f)),
-                                                                           scratch::Color(glm::vec3(0.5f)),
-                                                                           scratch::WHITE);
-
-    scratch::MainCamera = new scratch::Camera();
-
-    std::cout << "starting rendering loop" << std::endl;
-    // Rendering Loop
-    while (glfwWindowShouldClose(scratch::MainWindow) == false) {
-        glfwPollEvents();
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-//        bool showDemoWindow = true;
-//        ImGui::ShowDemoWindow(&showDemoWindow);
-        ImGuizmo::BeginFrame();
-
-        // Edit Transform
-        if (selectedEntityId != 0) {
-            glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
-            entities[selectedEntityId - 1].setTransform(editTransform(*scratch::MainCamera, matrix));
-        }
-
-        ImGui::Render();
-
-        if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(scratch::MainWindow, true);
-
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        if (checkSelection) {
-            handleSelection(selectionShader);
-            checkSelection = false;
-        }
-
-        std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
-        for (size_t i = 0; i < entities.size(); i++) {
-            std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
-            bool highlighted = (selectedEntityId == i + 1);
-            glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
-            for (auto &mesh : meshesToRender) {
-                mesh.material->setBool("highlighted", highlighted);
-                mesh.material->setMat4("model", modelMatrix);
-                mesh.material->setFloat("material.shininess", 32.0f);
-                renderQueue.push_back(mesh);
-            }
-        }
-
-        RenderSystem::render(renderQueue, directionalLight);
-
-
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        processInput();
-
-        // Flip Buffers and Draw
-        glfwSwapBuffers(scratch::MainWindow);
-    }
-    glfwTerminate();
-    return EXIT_SUCCESS;
 }
