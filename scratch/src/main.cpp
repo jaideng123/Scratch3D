@@ -4,15 +4,13 @@
 // Dear IMGUI Headers
 #include "imgui.h"
 
-//ImGuizmo Headers
-#include "ImGuizmo.h"
-
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
 #include <optional>
+#include <gui/transform_gizmo.h>
 
 // Local Headers
 #include "entity/entity-factory.h"
@@ -22,11 +20,15 @@
 
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
 void handleInput();
+
 void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader);
-glm::mat4 editTransform(scratch::Camera &camera, glm::mat4 &matrix);
+
 void handleSelection(scratch::Shader &selectionShader);
 
 std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
@@ -81,6 +83,8 @@ int main() {
 
     scratch::MainCamera = new scratch::Camera();
 
+    scratch::TransformGizmo transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
+
     std::cout << "starting rendering loop" << std::endl;
     // Rendering Loop
     while (glfwWindowShouldClose(scratch::MainWindow) == false) {
@@ -94,7 +98,9 @@ int main() {
         // Edit Transform
         if (selectedEntityId != 0) {
             glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
-            entities[selectedEntityId - 1].setTransform(editTransform(*scratch::MainCamera, matrix));
+            transformGizmo.setCurrentTransform(matrix);
+            transformGizmo.render();
+            entities[selectedEntityId - 1].setTransform(transformGizmo.getCurrentTransform());
         }
 
         if (checkSelection) {
@@ -206,63 +212,6 @@ void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shade
     }
 }
 
-glm::mat4 editTransform(scratch::Camera &camera, glm::mat4 &matrix) {
-    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-    if (ImGui::IsKeyPressed(90))
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    if (ImGui::IsKeyPressed(69))
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    if (ImGui::IsKeyPressed(82)) // r Key
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
-    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
-
-    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    float *matrixPointer = glm::value_ptr(matrix);
-    ImGuizmo::DecomposeMatrixToComponents(matrixPointer, matrixTranslation, matrixRotation, matrixScale);
-    ImGui::InputFloat3("Tr", matrixTranslation);
-    ImGui::InputFloat3("Rt", matrixRotation);
-    ImGui::InputFloat3("Sc", matrixScale);
-    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrixPointer);
-
-    if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
-        if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-            mCurrentGizmoMode = ImGuizmo::LOCAL;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-            mCurrentGizmoMode = ImGuizmo::WORLD;
-    }
-    static bool useSnap(false);
-    if (ImGui::IsKeyPressed(83))
-        useSnap = !useSnap;
-    ImGui::Checkbox("", &useSnap);
-    ImGui::SameLine();
-    glm::vec3 snap = {1.0f, 1.0f, 1.0f};
-    switch (mCurrentGizmoOperation) {
-        case ImGuizmo::TRANSLATE:
-            ImGui::InputFloat3("Snap", &snap.x);
-            break;
-        case ImGuizmo::ROTATE:
-            ImGui::InputFloat("Angle Snap", &snap.x);
-            break;
-        case ImGuizmo::SCALE:
-            ImGui::InputFloat("Scale Snap", &snap.x);
-            break;
-    }
-    ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
-    ImGuizmo::Manipulate(glm::value_ptr(camera.GetViewMatrix()), glm::value_ptr(camera.GetProjectionMatrix()),
-                         mCurrentGizmoOperation, mCurrentGizmoMode, matrixPointer, NULL,
-                         useSnap ? &snap.x : NULL);
-    return glm::make_mat4(matrixPointer);
-}
-
 //TODO: Render to separate frame buffer
 //TODO: break this off
 void handleSelection(scratch::Shader &selectionShader) {
@@ -287,8 +236,8 @@ void handleSelection(scratch::Shader &selectionShader) {
     int width, height;
     glfwGetWindowSize(scratch::MainWindow, &width, &height);
     glReadPixels(lastX, height - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
-    printf("%u %u %u\n", pixel[0], pixel[1], pixel[2]);
     selectedEntityId = pixel[0] | pixel[1] << 8 | pixel[2] << 16;
+    std::cout << "Selected Entity Id: " << selectedEntityId << std::endl;
 
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
