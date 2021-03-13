@@ -10,6 +10,8 @@
 #include "transform_gizmo.h"
 
 void scratch::TransformGizmo::render() {
+    ImGui::SetNextWindowPos(ImVec2(0, Y_OFFSET));
+    ImGui::Begin("Transform Edit");
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
     if (ImGui::IsKeyPressed(90))
@@ -66,6 +68,7 @@ void scratch::TransformGizmo::render() {
                          mCurrentGizmoOperation, mCurrentGizmoMode, matrixPointer, NULL,
                          useSnap ? &snap.x : NULL);
     currentTransform = glm::make_mat4(matrixPointer);
+    ImGui::End();
 }
 
 void scratch::TransformGizmo::setCurrentTransform(glm::mat4 transform) {

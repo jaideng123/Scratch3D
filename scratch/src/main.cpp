@@ -11,6 +11,7 @@
 #include <vector>
 #include <optional>
 #include <gui/transform_gizmo.h>
+#include <gui/main_menu_bar.h>
 
 // Local Headers
 #include "entity/entity-factory.h"
@@ -85,6 +86,8 @@ int main() {
 
     scratch::TransformGizmo transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
 
+    scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
+
     std::cout << "starting rendering loop" << std::endl;
     // Rendering Loop
     while (glfwWindowShouldClose(scratch::MainWindow) == false) {
@@ -102,6 +105,8 @@ int main() {
             transformGizmo.render();
             entities[selectedEntityId - 1].setTransform(transformGizmo.getCurrentTransform());
         }
+
+        mainMenuBar.render();
 
         if (checkSelection) {
             handleSelection(selectionShader);
