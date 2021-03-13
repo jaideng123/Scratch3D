@@ -52,18 +52,18 @@ int main() {
 
 
     std::cout << "Loading Shaders..." << std::endl;
-    scratch::Shader unlitShader = scratch::Shader("./shaders/unlit.vert", "./shaders/unlit.frag");
+    scratch::Shader unlitShader = scratch::Shader("./assets/shaders/unlit.vert", "./shaders/unlit.frag");
     shaders.push_back(&unlitShader);
-    scratch::Shader litShader = scratch::Shader("./shaders/lit.vert", "./shaders/lit.frag");
+    scratch::Shader litShader = scratch::Shader("./assets/shaders/lit.vert", "./shaders/lit.frag");
     shaders.push_back(&litShader);
-    scratch::Shader selectionShader = scratch::Shader("./shaders/entity-selection.vert",
-                                                      "./shaders/entity-selection.frag");
+    scratch::Shader selectionShader = scratch::Shader("./assets/shaders/entity-selection.vert",
+                                                      "./assets/shaders/entity-selection.frag");
     shaders.push_back(&selectionShader);
 
     std::cout << "Loading Models..." << std::endl;
-    scratch::Model nanosuitModel = scratch::Model("./models/nanosuit/nanosuit.obj");
+    scratch::Model nanosuitModel = scratch::Model("./assets/models/nanosuit/nanosuit.obj");
     setDefaultShader(nanosuitModel.getMeshes(), litShader);
-    scratch::Model stoneModel = scratch::Model("./models/stone-man/Stone.obj");
+    scratch::Model stoneModel = scratch::Model("./assets/models/stone-man/Stone.obj");
     setDefaultShader(stoneModel.getMeshes(), litShader);
 
     std::cout << "Creating Entities..." << std::endl;
@@ -98,7 +98,6 @@ int main() {
 
         RenderSystem::startFrame();
 
-        // Edit Transform
         if (selectedEntityId != 0) {
             glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
             transformGizmo.setCurrentTransform(matrix);
