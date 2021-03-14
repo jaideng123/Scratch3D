@@ -3,3 +3,5 @@
 //
 
 #include "scene_manager.h"
+
+scratch::SceneManager::SceneManager() {}

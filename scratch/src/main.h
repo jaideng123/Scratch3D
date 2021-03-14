@@ -5,8 +5,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <btBulletDynamicsCommon.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <memory>
 #include <camera/camera.h>
 #include <GLFW/glfw3.h>
