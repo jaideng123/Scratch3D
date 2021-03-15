@@ -12,10 +12,9 @@
 #include <optional>
 #include <gui/transform_gizmo.h>
 #include <gui/main_menu_bar.h>
+#include <scene/scene_manager.h>
 
 // Local Headers
-#include "entity/entity-factory.h"
-#include "graphics/modelRenderable.h"
 #include "time/scratch_time.h"
 #include "graphics/render_system.h"
 
@@ -28,18 +27,13 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 void handleInput();
 
-void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader);
-
-void handleSelection(scratch::Shader &selectionShader);
-
-std::vector<scratch::Entity> entities = std::vector<scratch::Entity>();
-std::vector<scratch::Shader *> shaders = std::vector<scratch::Shader *>();
-
 double lastX = 400, lastY = 300;
 bool firstMouse = true;
 
-unsigned int selectedEntityId = 0;
+unsigned int selectedSceneNodeId = 0;
 bool checkSelection = false;
+
+scratch::SceneManager sceneManager = scratch::SceneManager();
 
 int main() {
     RenderSystem::setup();
@@ -52,35 +46,38 @@ int main() {
 
 
     std::cout << "Loading Shaders..." << std::endl;
-    scratch::Shader unlitShader = scratch::Shader("./assets/shaders/unlit.vert", "./shaders/unlit.frag");
-    shaders.push_back(&unlitShader);
-    scratch::Shader litShader = scratch::Shader("./assets/shaders/lit.vert", "./shaders/lit.frag");
-    shaders.push_back(&litShader);
-    scratch::Shader selectionShader = scratch::Shader("./assets/shaders/entity-selection.vert",
-                                                      "./assets/shaders/entity-selection.frag");
-    shaders.push_back(&selectionShader);
+    auto unlitShader = std::make_shared<scratch::Shader>("./assets/shaders/unlit.vert", "./assets/shaders/unlit.frag");
+    auto litShader = std::make_shared<scratch::Shader>("./assets/shaders/lit.vert", "./assets/shaders/lit.frag");
+    auto selectionShader = std::make_shared<scratch::Shader>("./assets/shaders/entity-selection.vert",
+                                                             "./assets/shaders/entity-selection.frag");
 
     std::cout << "Loading Models..." << std::endl;
-    scratch::Model nanosuitModel = scratch::Model("./assets/models/nanosuit/nanosuit.obj");
-    setDefaultShader(nanosuitModel.getMeshes(), litShader);
-    scratch::Model stoneModel = scratch::Model("./assets/models/stone-man/Stone.obj");
-    setDefaultShader(stoneModel.getMeshes(), litShader);
+    auto nanoSuitModel = sceneManager.createModelRenderable("./assets/models/nanosuit/nanosuit.obj", litShader);
+    auto stoneManModel = sceneManager.createModelRenderable("./assets/models/stone-man/Stone.obj", litShader);
 
     std::cout << "Creating Entities..." << std::endl;
-    scratch::EntityFactory entityFactory = scratch::EntityFactory();
-    entities.push_back(
-            entityFactory.create_entity(glm::vec3(-2, 0, 0), glm::vec3(0.2f),
-                                        new scratch::ModelRenderable(nanosuitModel)));
-    entities.push_back(
-            entityFactory.create_entity(glm::vec3(0, 0, 0), glm::vec3(0.2f),
-                                        new scratch::ModelRenderable(stoneModel)));
+    auto nanosuitEntity = sceneManager.createEntity(nanoSuitModel);
+    auto stoneManEntity = sceneManager.createEntity(stoneManModel);
 
-    selectedEntityId = 0;
+    std::cout << "Creating Scene Nodes..." << std::endl;
+    auto nanosuitNode = sceneManager.createSceneNode(nanosuitEntity);
+    nanosuitNode->setPosition(glm::vec3(-2, 0, 0));
+    nanosuitNode->setScale(glm::vec3(0.2f));
+    sceneManager.getRootNode().addChild(nanosuitNode);
 
-    scratch::DirectionalLight directionalLight = scratch::DirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
-                                                                           scratch::Color(glm::vec3(0.2f)),
-                                                                           scratch::Color(glm::vec3(0.5f)),
-                                                                           scratch::WHITE);
+    auto stoneManNode = sceneManager.createSceneNode(stoneManEntity);
+    stoneManNode->setScale(glm::vec3(0.2f));
+    sceneManager.getRootNode().addChild(stoneManNode);
+
+
+    selectedSceneNodeId = 0;
+
+    auto directionalLight = sceneManager.createDirectionalLight();
+    directionalLight->setDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
+    directionalLight->setAmbient(scratch::Color(glm::vec3(0.2f)));
+    directionalLight->setDiffuse(scratch::Color(glm::vec3(0.5f)));
+    directionalLight->setSpecular(scratch::WHITE);
+
 
     scratch::MainCamera = new scratch::Camera();
 
@@ -97,35 +94,22 @@ int main() {
         handleInput();
 
         RenderSystem::startFrame();
-
-        if (selectedEntityId != 0) {
-            glm::mat4 matrix = entities[selectedEntityId - 1].generateTransformMatrix();
+        auto selectedNode = selectedSceneNodeId == 0 ? nullptr : sceneManager.findSceneNode(selectedSceneNodeId);
+        if (selectedNode != nullptr) {
+            glm::mat4 matrix = selectedNode->generateTransformMatrix();
             transformGizmo.setCurrentTransform(matrix);
             transformGizmo.render();
-            entities[selectedEntityId - 1].setTransform(transformGizmo.getCurrentTransform());
+            selectedNode->setTransform(transformGizmo.getCurrentTransform());
+        }
+
+        if (checkSelection) {
+            selectedSceneNodeId = sceneManager.handleSelection(*selectionShader, glm::vec2(lastX, lastY));
+            checkSelection = false;
         }
 
         mainMenuBar.render();
 
-        if (checkSelection) {
-            handleSelection(selectionShader);
-            checkSelection = false;
-        }
-
-        std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
-        for (size_t i = 0; i < entities.size(); i++) {
-            std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
-            bool highlighted = (selectedEntityId == i + 1);
-            glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
-            for (auto &mesh : meshesToRender) {
-                mesh.material->setBool("highlighted", highlighted);
-                mesh.material->setMat4("model", modelMatrix);
-                mesh.material->setFloat("material.shininess", 32.0f);
-                renderQueue.push_back(mesh);
-            }
-        }
-
-        RenderSystem::render(renderQueue, directionalLight);
+        sceneManager.render(*scratch::MainCamera);
 
         RenderSystem::endFrame();
     }
@@ -176,7 +160,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         return;
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        for (auto &shader : shaders) {
+        for (auto &shader : sceneManager.getShaders()) {
             shader->reload();
         }
     }
@@ -208,42 +192,4 @@ void handleInput() {
     } else {
         glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-}
-
-void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader) {
-    for (auto &mesh : meshes) {
-        mesh.material->setShader(&shader);
-    }
-}
-
-//TODO: Render to separate frame buffer
-//TODO: break this off
-void handleSelection(scratch::Shader &selectionShader) {
-    glDisable(GL_FRAMEBUFFER_SRGB);
-    glClearColor(0, 0, 0, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glm::mat4 view = scratch::MainCamera->GetViewMatrix();
-    glm::mat4 projection = scratch::MainCamera->GetProjectionMatrix();
-    for (size_t i = 0; i < entities.size(); i++) {
-        std::vector<scratch::Mesh> meshesToRender = entities[i].getRenderable()->getMeshes();
-        glm::mat4 modelMatrix = entities[i].generateTransformMatrix();
-        for (auto &mesh : meshesToRender) {
-            selectionShader.use();
-            selectionShader.setMat4("model", modelMatrix);
-            selectionShader.setMat4("view", view);
-            selectionShader.setMat4("projection", projection);
-            selectionShader.setUnsignedInt("entityId", entities[i].getID());
-            mesh.Draw();
-        }
-    }
-    GLubyte pixel[3];
-    int width, height;
-    glfwGetWindowSize(scratch::MainWindow, &width, &height);
-    glReadPixels(lastX, height - lastY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
-    selectedEntityId = pixel[0] | pixel[1] << 8 | pixel[2] << 16;
-    std::cout << "Selected Entity Id: " << selectedEntityId << std::endl;
-
-    glEnable(GL_FRAMEBUFFER_SRGB);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

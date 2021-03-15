@@ -9,30 +9,31 @@ namespace scratch {class Shader;}
 
 namespace scratch {
     class DirectionalLight {
-        glm::vec3 direction;
-        scratch::Color ambient;
-        scratch::Color diffuse;
-        scratch::Color specular;
-
     public:
-        DirectionalLight(const glm::vec3 &direction, const scratch::Color &ambient, const scratch::Color &diffuse, const scratch::Color &specular);
+        DirectionalLight(const glm::vec3 &_direction, const scratch::Color &_ambient, const scratch::Color &_diffuse, const scratch::Color &_specular);
+        DirectionalLight(){}
 
         const glm::vec3 &getDirection() const;
 
-        void setDirection(const glm::vec3 &direction);
+        void setDirection(const glm::vec3 &_direction);
 
         const scratch::Color &getAmbient() const;
 
-        void setAmbient(const scratch::Color &ambient);
+        void setAmbient(const scratch::Color &_ambient);
 
         const scratch::Color &getDiffuse() const;
 
-        void setDiffuse(const scratch::Color &diffuse);
+        void setDiffuse(const scratch::Color &_diffuse);
 
         const scratch::Color &getSpecular() const;
 
-        void setSpecular(const scratch::Color &specular);
+        void setSpecular(const scratch::Color &_specular);
 
         void ApplyToShader(Shader& shader);
+    private:
+        glm::vec3 _direction;
+        scratch::Color _ambient;
+        scratch::Color _diffuse;
+        scratch::Color _specular;
     };
 }

@@ -3,11 +3,13 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include "entity/entity.hpp"
 
 namespace scratch {
 
     class SceneNode {
     public:
+        SceneNode();
 
         void attachChild(std::shared_ptr<SceneNode> child);
 
@@ -16,6 +18,12 @@ namespace scratch {
         const std::weak_ptr<SceneNode> &getParent() const;
 
         const std::vector<std::shared_ptr<SceneNode>> &getChildren() const;
+
+        void addChild(const std::shared_ptr<scratch::SceneNode>& child);
+
+        const std::shared_ptr<scratch::Entity> &getEntity() const;
+
+        void setEntity(const std::shared_ptr<scratch::Entity> &entity);
 
         // Transform Methods
         glm::mat4 generateTransformMatrix();
@@ -33,12 +41,19 @@ namespace scratch {
         glm::quat getRotation();
 
         void setRotation(glm::quat rotation);
+
+        unsigned int getId() const;
+
+        void setId(unsigned int id);
+
     private:
         glm::vec3 _position;
         glm::vec3 _scale;
         glm::quat _rotation;
         std::weak_ptr<SceneNode> _parent;
         std::vector<std::shared_ptr<SceneNode>> _children;
+        std::shared_ptr<scratch::Entity> entity;
+        unsigned int _id;
     };
 
 }

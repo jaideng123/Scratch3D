@@ -6,44 +6,44 @@
 #include "graphics/shader.h"
 
 scratch::DirectionalLight::DirectionalLight(const glm::vec3 &direction, const scratch::Color &ambient,
-                                            const scratch::Color &diffuse, const scratch::Color &specular) : direction(
-        direction), ambient(ambient), diffuse(diffuse), specular(specular) {}
+                                            const scratch::Color &diffuse, const scratch::Color &specular) : _direction(
+        direction), _ambient(ambient), _diffuse(diffuse), _specular(specular) {}
 
 const glm::vec3 &scratch::DirectionalLight::getDirection() const {
-    return direction;
+    return _direction;
 }
 
 void scratch::DirectionalLight::setDirection(const glm::vec3 &direction) {
-    DirectionalLight::direction = direction;
+    _direction = direction;
 }
 
 const scratch::Color &scratch::DirectionalLight::getAmbient() const {
-    return ambient;
+    return _ambient;
 }
 
 void scratch::DirectionalLight::setAmbient(const scratch::Color &ambient) {
-    DirectionalLight::ambient = ambient;
+    _ambient = ambient;
 }
 
 const scratch::Color &scratch::DirectionalLight::getDiffuse() const {
-    return diffuse;
+    return _diffuse;
 }
 
 void scratch::DirectionalLight::setDiffuse(const scratch::Color &diffuse) {
-    DirectionalLight::diffuse = diffuse;
+    _diffuse = diffuse;
 }
 
 const scratch::Color &scratch::DirectionalLight::getSpecular() const {
-    return specular;
+    return _specular;
 }
 
 void scratch::DirectionalLight::setSpecular(const scratch::Color &specular) {
-    DirectionalLight::specular = specular;
+    _specular = specular;
 }
 
 void scratch::DirectionalLight::ApplyToShader(scratch::Shader &shader) {
-    shader.setVec3("dirLight.direction", direction);
-    shader.setVec3("dirLight.ambient", ambient.getValue());
-    shader.setVec3("dirLight.diffuse", diffuse.getValue());
-    shader.setVec3("dirLight.specular", specular.getValue());
+    shader.setVec3("dirLight.direction", _direction);
+    shader.setVec3("dirLight.ambient", _ambient.getValue());
+    shader.setVec3("dirLight.diffuse", _diffuse.getValue());
+    shader.setVec3("dirLight.specular", _specular.getValue());
 }

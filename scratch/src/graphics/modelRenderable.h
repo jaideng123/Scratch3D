@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include <memory>
 #include "renderable.h"
 
 namespace scratch {class Model;}
@@ -15,12 +16,12 @@ namespace scratch {class Mesh;}
 namespace scratch {
     class ModelRenderable : public scratch::Renderable {
     public:
-        ModelRenderable(scratch::Model &model);
+        ModelRenderable(std::shared_ptr<scratch::Model> model);
 
         std::vector<scratch::Mesh> &getMeshes() override;
 
     private:
-        scratch::Model &model;
+        std::shared_ptr<scratch::Model> model;
     };
 }
 

@@ -1,10 +1,7 @@
 //
 // Created by JJJai on 3/11/2021.
 //
-#include <glm/glm.hpp>
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "main.h"
@@ -42,7 +39,7 @@ void scratch::Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-void scratch::Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch) {
+void scratch::Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 

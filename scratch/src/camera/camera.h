@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace scratch {
     // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
@@ -70,7 +70,7 @@ namespace scratch {
         void ProcessKeyboard(Camera_Movement direction, float deltaTime);
 
         // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-        void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+        void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
 
         // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
         void ProcessMouseScroll(float yoffset);

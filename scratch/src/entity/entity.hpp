@@ -9,10 +9,10 @@ namespace scratch {
     class Entity {
     private:
         unsigned int _id;
-        scratch::Renderable *_renderable;
+        std::shared_ptr<scratch::Renderable> _renderable;
 
     public:
-        Entity(scratch::Renderable *renderable,
+        Entity(std::shared_ptr<scratch::Renderable> renderable,
                const unsigned int id) {
             _renderable = renderable;
             _id = id;
@@ -22,7 +22,7 @@ namespace scratch {
             return _id;
         }
 
-        scratch::Renderable *getRenderable() {
+        std::shared_ptr<scratch::Renderable> getRenderable() {
             return _renderable;
         }
     };

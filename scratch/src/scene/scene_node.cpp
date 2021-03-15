@@ -61,3 +61,30 @@ const std::vector<std::shared_ptr<scratch::SceneNode>> &scratch::SceneNode::getC
     return _children;
 }
 
+const std::shared_ptr<scratch::Entity> &scratch::SceneNode::getEntity() const {
+    return entity;
+}
+
+void scratch::SceneNode::setEntity(const std::shared_ptr<scratch::Entity> &entity) {
+    SceneNode::entity = entity;
+}
+
+unsigned int scratch::SceneNode::getId() const {
+    return _id;
+}
+
+void scratch::SceneNode::setId(unsigned int id) {
+    _id = id;
+}
+
+scratch::SceneNode::SceneNode() {
+    _position = glm::vec3(0);
+    _rotation = glm::quat();
+    _scale = glm::vec3(1.0f);
+    _children = std::vector<std::shared_ptr<scratch::SceneNode>>();
+}
+
+void scratch::SceneNode::addChild(const std::shared_ptr<scratch::SceneNode>& child) {
+    _children.push_back(child);
+}
+
