@@ -37,6 +37,7 @@ include_directories(
         scratch/vendor/stb/
         scratch/vendor/imgui
         scratch/vendor/ImGuizmo
+        scratch/vendor/rapidjson
 )
 
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
@@ -45,7 +46,11 @@ file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
         scratch/vendor/imgui/backends/imgui_impl_glfw.*
         scratch/vendor/imgui/backends/imgui_impl_opengl3.*
         scratch/vendor/ImGuizmo/*.h
-        scratch/vendor/ImGuizmo/*.cpp)
+        scratch/vendor/ImGuizmo/*.cpp
+        scratch/vendor/rapidjson/include/rapidjson/*.h
+        scratch/vendor/rapidjson/include/rapidjson/error/*.h
+        scratch/vendor/rapidjson/include/rapidjson/msinttypes/*.h
+        scratch/vendor/rapidjson/include/rapidjson/internal/*.h)
 file(GLOB PROJECT_HEADERS scratch/src/**/*.h* scratch/src/*.h*)
 file(GLOB PROJECT_SOURCES scratch/src/**/*.cpp scratch/src/*.cpp)
 file(GLOB PROJECT_CONFIGS CMakeLists.txt

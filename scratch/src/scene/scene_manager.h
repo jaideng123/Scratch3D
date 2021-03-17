@@ -32,6 +32,8 @@ namespace scratch {
 
         SceneNode &getRootNode();
 
+        void saveScene(std::string scenePath);
+
     private:
         scratch::IDFactory idFactory;
         scratch::SceneNode rootNode;

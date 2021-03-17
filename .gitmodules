@@ -23,3 +23,6 @@
 [submodule "scratch/vendor/ImGuizmo"]
 	path = scratch/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "scratch/vendor/rapidjson"]
+	path = scratch/vendor/rapidjson
+	url = https://github.com/Tencent/rapidjson

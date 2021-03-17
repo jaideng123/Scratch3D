@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <include/rapidjson/writer.h>
+#include <include/rapidjson/prettywriter.h>
 #include "entity/entity.hpp"
 
 namespace scratch {
@@ -45,6 +47,8 @@ namespace scratch {
         unsigned int getId() const;
 
         void setId(unsigned int id);
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> & writer);
 
     private:
         glm::vec3 _position;

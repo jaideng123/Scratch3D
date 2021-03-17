@@ -7,6 +7,7 @@
 #include <utility>
 #include <graphics/render_system.h>
 #include <main.h>
+#include <include/rapidjson/prettywriter.h>
 #include "scene_manager.h"
 
 scratch::SceneManager::SceneManager() {
@@ -50,7 +51,7 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::createSceneNode(std::
     return pNode;
 }
 
-void scratch::SceneManager::render(const scratch::Camera& camera) {
+void scratch::SceneManager::render(const scratch::Camera &camera) {
     std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
     for (auto currentNode : rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
@@ -72,7 +73,7 @@ std::shared_ptr<scratch::DirectionalLight> scratch::SceneManager::createDirectio
 
 std::shared_ptr<scratch::SceneNode> scratch::SceneManager::findSceneNode(unsigned int id) {
     for (auto currentNode : rootNode.getChildren()) {
-        if(currentNode->getId() == id){
+        if (currentNode->getId() == id) {
             return currentNode;
         }
     }
@@ -120,4 +121,13 @@ const std::vector<std::shared_ptr<scratch::Shader>> &scratch::SceneManager::getS
 
 scratch::SceneNode &scratch::SceneManager::getRootNode() {
     return rootNode;
+}
+
+void scratch::SceneManager::saveScene(std::string scenePath) {
+    rapidjson::StringBuffer sb;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+
+    rootNode.serialize(writer);
+
+    std::cout << sb.GetString() << std::endl;
 }

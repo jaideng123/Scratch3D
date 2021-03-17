@@ -164,6 +164,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
             shader->reload();
         }
     }
+
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        sceneManager.saveScene("");
+    }
 }
 
 void handleInput() {
