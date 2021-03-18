@@ -28,11 +28,15 @@ namespace scratch
 
         std::vector<scratch::Mesh> &getMeshes();
 
+        const std::string &getModelPath() const;
+
+
     private:
         /*  Model Data  */
         std::vector<Mesh> meshes;
         std::vector<Material> materials;
         std::string directory;
+        std::string modelPath;
         /*  Functions   */
         void loadModel(std::string path);
 

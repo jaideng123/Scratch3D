@@ -2,6 +2,7 @@
 // Created by JJJai on 7/19/2020.
 //
 
+#include <converter/stringConverter.h>
 #include "directionalLight.h"
 #include "graphics/shader.h"
 
@@ -46,4 +47,26 @@ void scratch::DirectionalLight::ApplyToShader(scratch::Shader &shader) {
     shader.setVec3("dirLight.ambient", _ambient.getValue());
     shader.setVec3("dirLight.diffuse", _diffuse.getValue());
     shader.setVec3("dirLight.specular", _specular.getValue());
+}
+
+void scratch::DirectionalLight::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
+    writer.StartObject();
+
+    writer.String("direction");
+    std::string serializedDirection = scratch::StringConverter::toString(_direction);
+    writer.String(serializedDirection.c_str(), static_cast<rapidjson::SizeType>(serializedDirection.length()));
+
+    writer.String("ambient");
+    std::string serializedAmbient = scratch::StringConverter::toString(_ambient.getValue());
+    writer.String(serializedAmbient.c_str(), static_cast<rapidjson::SizeType>(serializedAmbient.length()));
+
+    writer.String("diffuse");
+    std::string serializedDiffuse = scratch::StringConverter::toString(_diffuse.getValue());
+    writer.String(serializedDiffuse.c_str(), static_cast<rapidjson::SizeType>(serializedDiffuse.length()));
+
+    writer.String("specular");
+    std::string serializedSpecular = scratch::StringConverter::toString(_specular.getValue());
+    writer.String(serializedSpecular.c_str(), static_cast<rapidjson::SizeType>(serializedSpecular.length()));
+
+    writer.EndObject();
 }

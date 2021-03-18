@@ -9,6 +9,7 @@
 #include <main.h>
 #include <include/rapidjson/prettywriter.h>
 #include "scene_manager.h"
+#include <fstream>
 
 scratch::SceneManager::SceneManager() {
     idFactory = scratch::IDFactory();
@@ -20,7 +21,8 @@ std::shared_ptr<scratch::Renderable>
 scratch::SceneManager::createModelRenderable(const std::string &modelPath, const std::shared_ptr<Shader> &shader) {
     std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(modelPath);
     setDefaultShader(newModel->getMeshes(), *shader);
-    std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(newModel);
+    std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
+            idFactory.generate_id(), newModel);
     renderables.push_back(pRenderable);
     for (int i = 0; i < shaders.size(); ++i) {
         if (shaders[i] == shader) {
@@ -127,7 +129,49 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
 
+    writer.StartObject();
+
+    writer.String("renderables");
+    writer.StartArray();
+    for (auto &renderable : renderables) {
+        renderable->serialize(writer);
+    }
+    writer.EndArray();
+
+    writer.String("entities");
+    writer.StartArray();
+    for (auto &entity : entities) {
+        entity->serialize(writer);
+    }
+    writer.EndArray();
+
+    writer.String("shaders");
+    writer.StartArray();
+    for (auto &shader : shaders) {
+        shader->serialize(writer);
+    }
+    writer.EndArray();
+
+    writer.String("directionalLight");
+    directionalLight->serialize(writer);
+
+    writer.String("lastGeneratedId");
+    writer.Uint(idFactory.getLastGeneratedId());
+
+    writer.String("rootNode");
     rootNode.serialize(writer);
 
+    writer.EndObject();
+    std::cout << "Saving Scene Description:" << std::endl;
     std::cout << sb.GetString() << std::endl;
+
+    std::ofstream outfile;
+
+    outfile.open(scenePath);
+    std::cout << "Opened file: " << scenePath << std::endl;
+
+    outfile << sb.GetString();
+    outfile.close();
+    std::cout << "Closed file: " << scenePath << std::endl;
+
 }

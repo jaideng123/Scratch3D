@@ -16,3 +16,11 @@ unsigned int scratch::IDFactory::generate_id() {
     }
     return new_id;
 }
+
+void scratch::IDFactory::setLastGeneratedId(unsigned int id) {
+    _lastGeneratedId = id;
+}
+
+unsigned int scratch::IDFactory::getLastGeneratedId() {
+    return _lastGeneratedId;
+}

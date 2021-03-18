@@ -18,12 +18,23 @@ namespace scratch {
             _id = id;
         }
 
-        unsigned int getID() {
+        unsigned int getID() const {
             return _id;
         }
 
         std::shared_ptr<scratch::Renderable> getRenderable() {
             return _renderable;
+        }
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> & writer){
+            writer.StartObject();
+
+            writer.String("id");
+            writer.Uint(_id);
+            writer.String("entityId");
+            writer.Uint(_renderable->getId());
+
+            writer.EndObject();
         }
     };
 } // namespace scratch

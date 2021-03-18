@@ -3,3 +3,7 @@
 //
 
 #include "renderable.h"
+
+unsigned int scratch::Renderable::getId() const {
+    return Id;
+}

@@ -23,6 +23,7 @@ unsigned int TextureFromFile(const std::string path, const std::string &director
 glm::vec3 ConvertVector3(aiVector3D aiVec3);
 
 scratch::Model::Model(std::string path) {
+    modelPath = path;
     loadModel(path);
 }
 
@@ -149,6 +150,9 @@ std::vector<scratch::Texture> scratch::Model::loadMaterialTextures(aiMaterial *m
     return textures;
 }
 
+const std::string &scratch::Model::getModelPath() const {
+    return modelPath;
+}
 
 glm::vec3 ConvertVector3(aiVector3D aiVec3) {
     glm::vec3 newVec3 = glm::vec3(0);

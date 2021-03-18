@@ -91,6 +91,13 @@ void scratch::SceneNode::addChild(const std::shared_ptr<scratch::SceneNode> &chi
 void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
+    writer.String("entityId");
+    if (entity != nullptr) {
+        writer.Uint(entity->getID());
+    } else {
+        writer.Null();
+    }
+
     writer.String("position");
     std::string serializedPosition = scratch::StringConverter::toString(_position);
     writer.String(serializedPosition.c_str(), static_cast<rapidjson::SizeType>(serializedPosition.length()));
@@ -103,13 +110,6 @@ void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuff
     std::string serializedRotation = scratch::StringConverter::toString(
             glm::vec4(_rotation.x, _rotation.y, _rotation.z, _rotation.w));
     writer.String(serializedRotation.c_str(), static_cast<rapidjson::SizeType>(serializedRotation.length()));
-
-    writer.String("entityId");
-    if (entity != nullptr) {
-        writer.Uint(entity->getID());
-    } else {
-        writer.Null();
-    }
 
     writer.String("children");
     writer.StartArray();

@@ -7,13 +7,23 @@
 
 
 #include <vector>
+#include <string>
+#include <include/rapidjson/writer.h>
+#include <include/rapidjson/prettywriter.h>
+
 namespace scratch {class Mesh;}
 
 
 namespace scratch {
     class Renderable {
+    protected:
+        unsigned int Id;
     public:
         virtual std::vector<scratch::Mesh> &getMeshes() = 0;
+        virtual std::string getType() = 0;
+        virtual void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) = 0;
+
+        unsigned int getId() const;
     };
 }
 

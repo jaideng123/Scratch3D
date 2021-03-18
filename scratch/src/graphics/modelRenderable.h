@@ -16,12 +16,17 @@ namespace scratch {class Mesh;}
 namespace scratch {
     class ModelRenderable : public scratch::Renderable {
     public:
-        ModelRenderable(std::shared_ptr<scratch::Model> model);
+        ModelRenderable(unsigned int Id, std::shared_ptr<scratch::Model> model);
 
         std::vector<scratch::Mesh> &getMeshes() override;
 
     private:
         std::shared_ptr<scratch::Model> model;
+    public:
+        const std::string TYPE = "MODEL";
+        std::string getType() override;
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) override;
     };
 }
 

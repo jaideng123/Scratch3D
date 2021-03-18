@@ -9,6 +9,8 @@ namespace scratch {
         unsigned int _lastGeneratedId;
     public:
         IDFactory();
+        void setLastGeneratedId(unsigned int id);
+        unsigned int getLastGeneratedId();
 
         unsigned int generate_id();
     };

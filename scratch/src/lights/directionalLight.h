@@ -3,15 +3,20 @@
 //
 #pragma once
 
-namespace scratch {class Shader;}
+namespace scratch { class Shader; }
+
 #include "color/color.h"
 #include "glm/glm.hpp"
+#include <include/rapidjson/writer.h>
+#include <include/rapidjson/prettywriter.h>
 
 namespace scratch {
     class DirectionalLight {
     public:
-        DirectionalLight(const glm::vec3 &_direction, const scratch::Color &_ambient, const scratch::Color &_diffuse, const scratch::Color &_specular);
-        DirectionalLight(){}
+        DirectionalLight(const glm::vec3 &_direction, const scratch::Color &_ambient, const scratch::Color &_diffuse,
+                         const scratch::Color &_specular);
+
+        DirectionalLight() {}
 
         const glm::vec3 &getDirection() const;
 
@@ -29,7 +34,10 @@ namespace scratch {
 
         void setSpecular(const scratch::Color &_specular);
 
-        void ApplyToShader(Shader& shader);
+        void ApplyToShader(Shader &shader);
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
+
     private:
         glm::vec3 _direction;
         scratch::Color _ambient;
