@@ -13,7 +13,7 @@ namespace scratch {
     public:
         SceneManager();
 
-        std::shared_ptr<scratch::Renderable> scratch::SceneManager::createModelRenderable(const std::string &modelPath,
+        std::shared_ptr<scratch::Renderable> createModelRenderable(const std::string &modelPath,
                                                                                           const std::shared_ptr<Shader> &shader);
 
         std::shared_ptr<scratch::Entity> createEntity(std::shared_ptr<Renderable> renderable);
@@ -26,7 +26,7 @@ namespace scratch {
 
         void render(const scratch::Camera& camera);
 
-        unsigned int scratch::SceneManager::handleSelection(scratch::Shader &selectionShader, glm::vec2 mousePosition);
+        unsigned int handleSelection(scratch::Shader &selectionShader, glm::vec2 mousePosition);
 
         const std::vector<std::shared_ptr<scratch::Shader>> &getShaders() const;
 

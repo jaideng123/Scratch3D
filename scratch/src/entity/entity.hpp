@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <glm/glm.hpp>
+#include <memory>
 #include "graphics/renderable.h"
 #include "graphics/model.h"
 
