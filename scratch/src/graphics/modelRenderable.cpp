@@ -23,13 +23,14 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.String(TYPE.c_str(), static_cast<rapidjson::SizeType>(TYPE.length()));
     writer.String("id");
     writer.Uint(Id);
-    writer.String("modelPath");
-    writer.String(model->getModelPath().c_str(), static_cast<rapidjson::SizeType>(model->getModelPath().length()));
+    writer.String("modelId");
+    writer.Uint(model->Id);
 
     writer.EndObject();
 }
 
-scratch::ModelRenderable::ModelRenderable(unsigned int Id, std::shared_ptr<scratch::Model> model) : model(std::move(model)) {
+scratch::ModelRenderable::ModelRenderable(unsigned int Id, std::shared_ptr<scratch::Model> model) : model(
+        std::move(model)) {
     this->Id = Id;
 }
 

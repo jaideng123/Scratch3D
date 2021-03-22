@@ -19,8 +19,9 @@ scratch::SceneManager::SceneManager() {
 
 std::shared_ptr<scratch::Renderable>
 scratch::SceneManager::createModelRenderable(const std::string &modelPath, const std::shared_ptr<Shader> &shader) {
-    std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(modelPath);
+    std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(idFactory.generate_id(), modelPath);
     setDefaultShader(newModel->getMeshes(), *shader);
+    models.push_back(newModel);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
             idFactory.generate_id(), newModel);
     renderables.push_back(pRenderable);
@@ -60,6 +61,7 @@ void scratch::SceneManager::render(const scratch::Camera &camera) {
         std::vector<scratch::Mesh> meshesToRender = currentEntity->getRenderable()->getMeshes();
         glm::mat4 modelMatrix = currentNode->generateTransformMatrix();
         for (auto &mesh : meshesToRender) {
+            // TODO: get rid of these
             mesh.material->setMat4("model", modelMatrix);
             mesh.material->setFloat("material.shininess", 32.0f);
             renderQueue.push_back(mesh);
@@ -131,6 +133,16 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
 
     writer.StartObject();
 
+    writer.String("lastGeneratedId");
+    writer.Uint(idFactory.getLastGeneratedId());
+
+    writer.String("models");
+    writer.StartArray();
+    for (auto &model : models) {
+        model->serialize(writer);
+    }
+    writer.EndArray();
+
     writer.String("renderables");
     writer.StartArray();
     for (auto &renderable : renderables) {
@@ -155,9 +167,6 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     writer.String("directionalLight");
     directionalLight->serialize(writer);
 
-    writer.String("lastGeneratedId");
-    writer.Uint(idFactory.getLastGeneratedId());
-
     writer.String("rootNode");
     rootNode.serialize(writer);
 
@@ -173,5 +182,9 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     outfile << sb.GetString();
     outfile.close();
     std::cout << "Closed file: " << scenePath << std::endl;
+
+}
+
+void scratch::SceneManager::loadScene(std::string scenePath) {
 
 }

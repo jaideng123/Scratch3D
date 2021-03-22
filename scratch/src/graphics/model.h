@@ -21,14 +21,15 @@ namespace scratch
     class Model
     {
     public:
+        unsigned int Id;
         /*  Functions   */
-        Model(std::string path);
-
-        Model() = default;
+        Model(unsigned int id, std::string path);
 
         std::vector<scratch::Mesh> &getMeshes();
 
         const std::string &getModelPath() const;
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
 
 
     private:

@@ -22,13 +22,13 @@ unsigned int TextureFromFile(const std::string path, const std::string &director
 
 glm::vec3 ConvertVector3(aiVector3D aiVec3);
 
-scratch::Model::Model(std::string path) {
+scratch::Model::Model(unsigned int id, std::string path) {
+    Id = id;
     modelPath = path;
     loadModel(path);
 }
 
-std::vector<scratch::Mesh> &scratch::Model::getMeshes()
-{
+std::vector<scratch::Mesh> &scratch::Model::getMeshes() {
     return meshes;
 }
 
@@ -152,6 +152,25 @@ std::vector<scratch::Texture> scratch::Model::loadMaterialTextures(aiMaterial *m
 
 const std::string &scratch::Model::getModelPath() const {
     return modelPath;
+}
+
+void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
+    writer.StartObject();
+
+    writer.String("id");
+    writer.Uint(Id);
+
+    writer.String("modelPath");
+    writer.String(modelPath.c_str(), static_cast<rapidjson::SizeType>(modelPath.length()));
+
+    writer.String("materials");
+    writer.StartArray();
+    for (auto &material : materials) {
+        material.serialize(writer);
+    }
+    writer.EndArray();
+
+    writer.EndObject();
 }
 
 glm::vec3 ConvertVector3(aiVector3D aiVec3) {
