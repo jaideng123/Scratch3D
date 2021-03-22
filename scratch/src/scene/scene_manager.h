@@ -34,12 +34,15 @@ namespace scratch {
 
         void saveScene(std::string scenePath);
 
+        void loadScene(std::string scenePath);
+
     private:
         scratch::IDFactory idFactory;
         scratch::SceneNode rootNode;
         std::vector<std::shared_ptr<scratch::Renderable>> renderables;
         std::vector<std::shared_ptr<scratch::Entity>> entities;
         std::vector<std::shared_ptr<scratch::Shader>> shaders;
+        std::vector<std::shared_ptr<scratch::Model>> models;
         std::shared_ptr<scratch::DirectionalLight> directionalLight;
 
         static void setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader);

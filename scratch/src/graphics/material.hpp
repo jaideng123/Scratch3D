@@ -8,114 +8,109 @@
 #include "converter/stringConverter.h"
 #include "shader.h"
 
-namespace scratch
-{
-    struct Texture
-    {
+namespace scratch {
+    struct Texture {
         unsigned int id;
         std::string type;
         std::string path;
     };
 
-    enum ParameterType
-    {
+    enum ParameterType {
         BOOL,
         INT,
         FLOAT,
         VECTOR3,
         MATRIX4
     };
+    const std::map<ParameterType, std::string> PARAM_TYPE_TO_STRING{{BOOL,    "BOOL"},
+                                                                    {INT,     "INT"},
+                                                                    {FLOAT,   "FLOAT"},
+                                                                    {VECTOR3, "VECTOR3"},
+                                                                    {MATRIX4, "MATRIX4"}};
+    const std::map<std::string, ParameterType> STRING_TO_PARAM_TYPE{{"BOOL",    BOOL},
+                                                                    {"INT",     INT},
+                                                                    {"FLOAT",   FLOAT},
+                                                                    {"VECTOR3", VECTOR3},
+                                                                    {"MATRIX4", MATRIX4}};
 
-    struct Parameter
-    {
+    struct Parameter {
         std::string value;
         scratch::ParameterType type;
     };
 
-    class Material
-    {
+    class Material {
     public:
-        unsigned int ID;
+        unsigned int Id;
         std::map<std::string, scratch::Parameter> parameters;
-        Material(std::vector<Texture> textures)
-        {
-            ID = rand();
+
+        Material(std::vector<Texture> textures) {
+            Id = rand();
             _textures = textures;
         }
+
         Material() = default;
 
-        void activate()
-        {
+        void activate() {
             _shader->use();
             setupTextures();
             setStateParameters();
         }
 
-        void setShader(Shader *shader)
-        {
+        void setShader(Shader *shader) {
             _shader = shader;
         }
 
-        Shader *getShader()
-        {
+        Shader *getShader() {
             return _shader;
         }
 
-        void setBool(const std::string &name, bool value)
-        {
+        void setBool(const std::string &name, bool value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::BOOL;
             param.value = scratch::StringConverter::toString(value, false);
             parameters[name] = param;
         }
 
-        void setInt(const std::string &name, int value)
-        {
+        void setInt(const std::string &name, int value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::INT;
             param.value = scratch::StringConverter::toString(value);
             parameters[name] = param;
         }
 
-        void setFloat(const std::string &name, float value)
-        {
+        void setFloat(const std::string &name, float value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::FLOAT;
             param.value = scratch::StringConverter::toString(value);
             parameters[name] = param;
         }
 
-        void setMat4(const std::string &name, glm::mat4 value)
-        {
+        void setMat4(const std::string &name, glm::mat4 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::MATRIX4;
             param.value = scratch::StringConverter::toString(value);
             parameters[name] = param;
         }
 
-        glm::mat4 getMat4(const std::string &name)
-        {
+        glm::mat4 getMat4(const std::string &name) {
             return scratch::StringConverter::parsemat4(parameters.find(name)->second.value);
         }
 
 
-        void setVec3(const std::string &name, glm::vec3 value)
-        {
+        void setVec3(const std::string &name, glm::vec3 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::VECTOR3;
             param.value = scratch::StringConverter::toString(value);
             parameters[name] = param;
         }
 
-        void setupTextures()
-        {
+        void setupTextures() {
             // bind appropriate textures
             unsigned int diffuseNr = 1;
             unsigned int specularNr = 1;
             unsigned int normalNr = 1;
             unsigned int heightNr = 1;
-            for (unsigned int i = 0; i < _textures.size(); i++)
-            {
+            for (unsigned int i = 0; i < _textures.size(); i++) {
                 glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
                 // retrieve texture number (the N in diffuse_textureN)
                 scratch::Texture texture = _textures[i];
@@ -137,32 +132,51 @@ namespace scratch
             }
         }
 
-        void setStateParameters()
-        {
-            for (auto const &[key, val] : parameters)
-            {
-                switch (val.type)
-                {
-                case BOOL:
-                    _shader->setBool(key, scratch::StringConverter::parsebool(val.value));
-                    break;
-                case INT:
-                    _shader->setInt(key, scratch::StringConverter::parseint(val.value));
-                    break;
-                case FLOAT:
-                    _shader->setFloat(key, scratch::StringConverter::parsefloat(val.value));
-                    break;
-                case VECTOR3:
-                    _shader->setVec3(key, scratch::StringConverter::parsevec3(val.value));
-                    break;
-                case MATRIX4:
-                    _shader->setMat4(key, scratch::StringConverter::parsemat4(val.value));
-                    break;
-                default:
-                    throw std::runtime_error("UNKNOWN DATA TYPE");
-                    break;
+        void setStateParameters() {
+            for (auto const &[key, val] : parameters) {
+                switch (val.type) {
+                    case BOOL:
+                        _shader->setBool(key, scratch::StringConverter::parsebool(val.value));
+                        break;
+                    case INT:
+                        _shader->setInt(key, scratch::StringConverter::parseint(val.value));
+                        break;
+                    case FLOAT:
+                        _shader->setFloat(key, scratch::StringConverter::parsefloat(val.value));
+                        break;
+                    case VECTOR3:
+                        _shader->setVec3(key, scratch::StringConverter::parsevec3(val.value));
+                        break;
+                    case MATRIX4:
+                        _shader->setMat4(key, scratch::StringConverter::parsemat4(val.value));
+                        break;
+                    default:
+                        throw std::runtime_error("UNKNOWN DATA TYPE");
+                        break;
                 }
             }
+        }
+
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
+            writer.StartObject();
+
+            writer.String("parameters");
+            writer.StartObject();
+            // Iterate over the map using c++11 range based for loop
+            for (std::pair<std::string, scratch::Parameter> param : parameters) {
+                writer.String(param.first.c_str(), static_cast<rapidjson::SizeType>(param.first.length()));
+                writer.StartObject();
+                writer.String("type");
+                std::string type = PARAM_TYPE_TO_STRING.find(param.second.type)->second;
+                writer.String(type.c_str(), static_cast<rapidjson::SizeType>(type.length()));
+                writer.String("value");
+                writer.String(param.second.value.c_str(),
+                              static_cast<rapidjson::SizeType>(param.second.value.length()));
+                writer.EndObject();
+            }
+            writer.EndObject();
+
+            writer.EndObject();
         }
 
     private:

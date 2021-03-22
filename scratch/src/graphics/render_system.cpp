@@ -84,7 +84,7 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
 
     std::optional<scratch::Material> currentMaterial = {};
     for (auto mesh : renderQueue) {
-        if (!currentMaterial.has_value() || mesh.material->ID != currentMaterial.value().ID) {
+        if (!currentMaterial.has_value() || mesh.material->Id != currentMaterial.value().Id) {
             currentMaterial = *mesh.material;
             currentMaterial.value().activate();
             currentMaterial.value().getShader()->setMat4("view", view);
