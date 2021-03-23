@@ -7,6 +7,8 @@
 #include <utility>
 #include "graphics/model.h"
 
+const std::string scratch::ModelRenderable::TYPE = "MODEL";
+
 std::vector<scratch::Mesh> &scratch::ModelRenderable::getMeshes() {
     return model->getMeshes();
 }
@@ -34,4 +36,5 @@ scratch::ModelRenderable::ModelRenderable(unsigned int Id, std::shared_ptr<scrat
     this->Id = Id;
 }
 
+scratch::ModelRenderable::ModelRenderable() {}
 

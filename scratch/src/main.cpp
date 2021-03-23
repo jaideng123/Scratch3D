@@ -168,6 +168,9 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         sceneManager.saveScene("./scene.json");
     }
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+        sceneManager.loadScene("./scene.json");
+    }
 }
 
 void handleInput() {

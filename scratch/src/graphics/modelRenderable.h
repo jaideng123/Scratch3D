@@ -18,15 +18,18 @@ namespace scratch {
     public:
         ModelRenderable(unsigned int Id, std::shared_ptr<scratch::Model> model);
 
+        ModelRenderable();
+
         std::vector<scratch::Mesh> &getMeshes() override;
 
     private:
         std::shared_ptr<scratch::Model> model;
     public:
-        const std::string TYPE = "MODEL";
+        static const std::string TYPE;
         std::string getType() override;
 
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) override;
+
     };
 }
 

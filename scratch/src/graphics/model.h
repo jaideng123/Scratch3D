@@ -11,19 +11,21 @@
 #include <assimp/postprocess.h>
 #include "graphics/mesh.hpp"
 #include "graphics/material.hpp"
-
-namespace scratch {class Shader;}
-namespace scratch {class Material;}
+#include <include/rapidjson/document.h>
 
 
-namespace scratch
-{
-    class Model
-    {
+namespace scratch { class Shader; }
+namespace scratch { class Material; }
+
+
+namespace scratch {
+    class Model {
     public:
         unsigned int Id;
+
         /*  Functions   */
         Model(unsigned int id, std::string path);
+        Model();
 
         std::vector<scratch::Mesh> &getMeshes();
 
@@ -31,6 +33,7 @@ namespace scratch
 
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
 
+        void deserialize(const rapidjson::Value &object);
 
     private:
         /*  Model Data  */
@@ -38,6 +41,7 @@ namespace scratch
         std::vector<Material> materials;
         std::string directory;
         std::string modelPath;
+
         /*  Functions   */
         void loadModel(std::string path);
 
@@ -46,6 +50,7 @@ namespace scratch
         Material transformMaterial(aiMaterial *assimpMaterial);
 
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+
         std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
                                                   std::string typeName);
     };

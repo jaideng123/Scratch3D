@@ -144,7 +144,7 @@ std::vector<scratch::Texture> scratch::Model::loadMaterialTextures(aiMaterial *m
         Texture texture;
         texture.id = TextureFromFile(str.C_Str(), directory);
         texture.type = typeName;
-        // texture.path = str;
+        texture.path = directory + "/" + str.C_Str();
         textures.push_back(texture);
     }
     return textures;
@@ -171,6 +171,17 @@ void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> 
     writer.EndArray();
 
     writer.EndObject();
+}
+
+void scratch::Model::deserialize(const rapidjson::Value &object) {
+    Id = object["id"].GetUint();
+    modelPath = object["modelPath"].GetString();
+    this->loadModel(modelPath);
+    //TODO handle materials
+}
+
+scratch::Model::Model() {
+
 }
 
 glm::vec3 ConvertVector3(aiVector3D aiVec3) {

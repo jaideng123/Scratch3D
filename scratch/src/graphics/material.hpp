@@ -160,10 +160,27 @@ namespace scratch {
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
             writer.StartObject();
 
+            writer.String("textures");
+            writer.StartArray();
+            for (scratch::Texture texture: _textures) {
+                writer.StartObject();
+                writer.String("path");
+                writer.String(texture.path.c_str(), static_cast<rapidjson::SizeType>(texture.path.length()));
+                writer.String("type");
+                writer.String(texture.type.c_str(), static_cast<rapidjson::SizeType>(texture.type.length()));
+                writer.EndObject();
+            }
+            writer.EndArray();
+
+
             writer.String("parameters");
             writer.StartObject();
             // Iterate over the map using c++11 range based for loop
-            for (std::pair<std::string, scratch::Parameter> param : parameters) {
+            for (const std::pair<std::string, scratch::Parameter> &param : parameters) {
+                // TODO: remove once this is no longer a material property
+                if (param.first == "model") {
+                    continue;
+                }
                 writer.String(param.first.c_str(), static_cast<rapidjson::SizeType>(param.first.length()));
                 writer.StartObject();
                 writer.String("type");
