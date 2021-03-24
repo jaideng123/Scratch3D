@@ -46,10 +46,10 @@ int main() {
 
 
     std::cout << "Loading Shaders..." << std::endl;
-    auto unlitShader = std::make_shared<scratch::Shader>("./assets/shaders/unlit.vert", "./assets/shaders/unlit.frag");
-    auto litShader = std::make_shared<scratch::Shader>("./assets/shaders/lit.vert", "./assets/shaders/lit.frag");
-    auto selectionShader = std::make_shared<scratch::Shader>("./assets/shaders/entity-selection.vert",
-                                                             "./assets/shaders/entity-selection.frag");
+    auto unlitShader = sceneManager.createShader("./assets/shaders/unlit.vert", "./assets/shaders/unlit.frag");
+    auto litShader = sceneManager.createShader("./assets/shaders/lit.vert", "./assets/shaders/lit.frag");
+    auto selectionShader = sceneManager.createShader("./assets/shaders/entity-selection.vert",
+                                                     "./assets/shaders/entity-selection.frag");
 
     std::cout << "Loading Models..." << std::endl;
     auto nanoSuitModel = sceneManager.createModelRenderable("./assets/models/nanosuit/nanosuit.obj", litShader);
@@ -168,8 +168,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         sceneManager.saveScene("./scene.json");
     }
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+        selectedSceneNodeId = 0;
         sceneManager.loadScene("./scene.json");
+
     }
 }
 

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <include/rapidjson/document.h>
 
 
 glm::mat4 scratch::SceneNode::generateTransformMatrix() {
@@ -91,6 +92,9 @@ void scratch::SceneNode::addChild(const std::shared_ptr<scratch::SceneNode> &chi
 void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
+    writer.String("id");
+    writer.Uint(_id);
+
     writer.String("entityId");
     if (entity != nullptr) {
         writer.Uint(entity->getID());
@@ -113,11 +117,42 @@ void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuff
 
     writer.String("children");
     writer.StartArray();
-    for (auto &i : _children) {
-        i->serialize(writer);
+    for (auto &child : _children) {
+        child->serialize(writer);
     }
     writer.EndArray();
 
     writer.EndObject();
+}
+
+void scratch::SceneNode::deserialize(const rapidjson::Value &object,
+                                     const std::vector<std::shared_ptr<scratch::Entity>> &entities) {
+    _id = object["id"].GetUint();
+
+    entity = nullptr;
+    if (!object["entityId"].IsNull()) {
+        unsigned int entityId = object["entityId"].GetUint();
+        for (auto &entity : entities) {
+            if (entity->getID() == entityId) {
+                this->entity = entity;
+            }
+        }
+    }
+
+    _position = scratch::StringConverter::parsevec3(object["position"].GetString());
+
+    _scale = scratch::StringConverter::parsevec3(object["scale"].GetString());
+
+    glm::vec4 rotationVector = scratch::StringConverter::parsevec4(object["rotation"].GetString());
+    _rotation = glm::quat(rotationVector.x, rotationVector.y, rotationVector.z, rotationVector.w);
+
+    auto childrenArray = object["children"].GetArray();
+    _children.clear();
+    for (rapidjson::Value::ConstValueIterator itr = childrenArray.Begin(); itr != childrenArray.End(); ++itr) {
+        auto child = std::make_shared<scratch::SceneNode>();
+        child->deserialize(*itr, entities);
+        _children.push_back(child);
+    }
+
 }
 

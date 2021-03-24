@@ -19,31 +19,21 @@ scratch::SceneManager::SceneManager() {
 }
 
 std::shared_ptr<scratch::Renderable>
-scratch::SceneManager::createModelRenderable(const std::string &modelPath, const std::shared_ptr<Shader> &shader) {
+scratch::SceneManager::createModelRenderable(const std::string &modelPath,
+                                             const std::shared_ptr<Shader> &defaultShader) {
     std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(idFactory.generate_id(), modelPath);
-    setDefaultShader(newModel->getMeshes(), *shader);
+    newModel->setDefaultShader(defaultShader);
     models.push_back(newModel);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
             idFactory.generate_id(), newModel);
     renderables.push_back(pRenderable);
-    for (int i = 0; i < shaders.size(); ++i) {
-        if (shaders[i] == shader) {
-            return pRenderable;
-        }
-    }
-    shaders.push_back(shader);
     return pRenderable;
 
 }
 
-void scratch::SceneManager::setDefaultShader(std::vector<scratch::Mesh> &meshes, scratch::Shader &shader) {
-    for (auto &mesh : meshes) {
-        mesh.material->setShader(&shader);
-    }
-}
 
 std::shared_ptr<scratch::Entity> scratch::SceneManager::createEntity(std::shared_ptr<Renderable> renderable) {
-    std::shared_ptr<scratch::Entity> pEntity = std::make_shared<scratch::Entity>(renderable, idFactory.generate_id());
+    std::shared_ptr<scratch::Entity> pEntity = std::make_shared<scratch::Entity>(idFactory.generate_id(), renderable);
     entities.push_back(pEntity);
     return pEntity;
 }
@@ -54,6 +44,15 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::createSceneNode(std::
     pNode->setId(idFactory.generate_id());
     return pNode;
 }
+
+std::shared_ptr<scratch::Shader>
+scratch::SceneManager::createShader(const std::string &vertexPath, const std::string &fragmentPath) {
+    std::shared_ptr<scratch::Shader> shader = std::make_shared<scratch::Shader>(idFactory.generate_id(), vertexPath,
+                                                                                fragmentPath);
+    shaders.push_back(shader);
+    return shader;
+}
+
 
 void scratch::SceneManager::render(const scratch::Camera &camera) {
     std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
@@ -138,6 +137,13 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     writer.String("lastGeneratedId");
     writer.Uint(idFactory.getLastGeneratedId());
 
+    writer.String("shaders");
+    writer.StartArray();
+    for (auto &shader : shaders) {
+        shader->serialize(writer);
+    }
+    writer.EndArray();
+
     writer.String("models");
     writer.StartArray();
     for (auto &model : models) {
@@ -156,13 +162,6 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     writer.StartArray();
     for (auto &entity : entities) {
         entity->serialize(writer);
-    }
-    writer.EndArray();
-
-    writer.String("shaders");
-    writer.StartArray();
-    for (auto &shader : shaders) {
-        shader->serialize(writer);
     }
     writer.EndArray();
 
@@ -200,11 +199,27 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     rapidjson::Value &lastGeneratedId = document["lastGeneratedId"];
     idFactory.setLastGeneratedId(lastGeneratedId.GetUint());
 
+    rapidjson::Value &shadersArray = document["shaders"].GetArray();
+    shaders.clear();
+    for (rapidjson::Value::ConstValueIterator itr = shadersArray.Begin(); itr != shadersArray.End(); ++itr) {
+        std::shared_ptr<scratch::Shader> shader = std::make_shared<scratch::Shader>();
+        shader->deserialize(*itr);
+        shaders.push_back(shader);
+    }
+
     rapidjson::Value &modelsArray = document["models"].GetArray();
     models.clear();
     for (rapidjson::Value::ConstValueIterator itr = modelsArray.Begin(); itr != modelsArray.End(); ++itr) {
         std::shared_ptr<scratch::Model> model = std::make_shared<scratch::Model>();
         model->deserialize(*itr);
+        unsigned int defaultShaderId = (*itr)["defaultShaderId"].GetUint();
+        std::shared_ptr<scratch::Shader> defaultShader;
+        for (auto &shader : shaders) {
+            if (shader->Id == defaultShaderId) {
+                defaultShader = shader;
+            }
+        }
+        model->setDefaultShader(defaultShader);
         models.push_back(model);
     }
 
@@ -227,4 +242,25 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         }
         renderables.push_back(newRenderable);
     }
+
+    rapidjson::Value &entitiesArray = document["entities"].GetArray();
+    entities.clear();
+    for (rapidjson::Value::ConstValueIterator itr = entitiesArray.Begin(); itr != entitiesArray.End(); ++itr) {
+        std::shared_ptr<scratch::Renderable> linkedRenderable;
+        unsigned int targetRenderableId = (*itr)["renderableId"].GetUint();
+        for (auto &renderable : renderables) {
+            if (renderable->getId() == targetRenderableId) {
+                linkedRenderable = renderable;
+            }
+        }
+        std::shared_ptr<scratch::Entity> newEntity = std::make_shared<scratch::Entity>((*itr)["id"].GetUint(),
+                                                                                       linkedRenderable);
+        entities.push_back(newEntity);
+    }
+
+    directionalLight = std::make_shared<scratch::DirectionalLight>();
+    directionalLight->deserialize(document["directionalLight"]);
+
+    rootNode.deserialize(document["rootNode"], entities);
+    std::cout << "Finished Loading Scene" << std::endl;
 }

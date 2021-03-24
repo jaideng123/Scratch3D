@@ -21,7 +21,7 @@ namespace scratch {
 
         const std::vector<std::shared_ptr<SceneNode>> &getChildren() const;
 
-        void addChild(const std::shared_ptr<scratch::SceneNode>& child);
+        void addChild(const std::shared_ptr<scratch::SceneNode> &child);
 
         const std::shared_ptr<scratch::Entity> &getEntity() const;
 
@@ -48,7 +48,11 @@ namespace scratch {
 
         void setId(unsigned int id);
 
-        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> & writer);
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
+
+        void
+        deserialize(const rapidjson::Value &object, const std::vector<std::shared_ptr<scratch::Entity>> &entities);
+
 
     private:
         glm::vec3 _position;

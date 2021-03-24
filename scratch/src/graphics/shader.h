@@ -7,16 +7,19 @@
 #include <string>
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
+#include <include/rapidjson/document.h>
 
 namespace scratch {
     class Shader {
     public:
+        unsigned int Id;
         unsigned int shaderId;
 
         // Read + compile shader
-        Shader(const std::string vertexPath, const std::string fragmentPath);
+        Shader(const unsigned int Id, const std::string vertexPath, const std::string fragmentPath);
 
         Shader() = default;
+
 
         const std::string &getVertexPath() const;
 
@@ -39,13 +42,18 @@ namespace scratch {
 
         void setVec3(const std::string &name, glm::vec3 value) const;
 
-        void serialize(rapidjson::PrettyWriter <rapidjson::StringBuffer> &writer);
+        void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
+
+        void deserialize(const rapidjson::Value &object);
+
 
     private:
         std::string _vertexPath;
         std::string _fragmentPath;
 
         std::string readFileContents(std::string filename);
+
+        int compileShaders();
 
         void checkSuccessfulShaderCompilation(int shaderId);
 

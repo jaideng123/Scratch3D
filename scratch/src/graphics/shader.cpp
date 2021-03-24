@@ -4,32 +4,16 @@
 #include <sstream>
 #include <iostream>
 #include <filesystem>
+#include <include/rapidjson/document.h>
 
 
-scratch::Shader::Shader(const std::string vertexPath, const std::string fragmentPath) {
-    int vertexShader = generateAndCompileShader(vertexPath, GL_VERTEX_SHADER);
+scratch::Shader::Shader(const unsigned int Id, const std::string vertexPath, const std::string fragmentPath) {
+    this->Id = Id;
+
     _vertexPath = vertexPath;
-    std::cout << "Compiling Shader: " << _vertexPath << std::endl;
-    checkSuccessfulShaderCompilation(vertexShader);
-
-    int fragmentShader = generateAndCompileShader(fragmentPath, GL_FRAGMENT_SHADER);
     _fragmentPath = fragmentPath;
-    std::cout << "Compiling Shader: " << _fragmentPath << std::endl;
-    checkSuccessfulShaderCompilation(fragmentShader);
 
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    checkSuccessfulShaderLink(shaderProgram);
-
-    shaderId = shaderProgram;
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    shaderId = compileShaders();
 }
 
 void scratch::Shader::use() {
@@ -38,6 +22,19 @@ void scratch::Shader::use() {
 
 void scratch::Shader::reload() {
     std::cout << "Reloading shader..." << std::endl;
+    int newShaderId = compileShaders();
+
+    std::cout << "Deleting Shader: " << shaderId << std::endl;
+    glDeleteProgram(shaderId);
+    std::cout << "Setting new Shader ID: " << newShaderId << std::endl;
+    shaderId = newShaderId;
+    std::cout << "Set new Shader ID: " << shaderId << std::endl;
+
+    std::cout << "Finished reloading shader..." << std::endl;
+}
+
+int scratch::Shader::compileShaders() {
+    std::cout << "Compiling shaders..." << std::endl;
     int vertexShader = generateAndCompileShader(_vertexPath, GL_VERTEX_SHADER);
     checkSuccessfulShaderCompilation(vertexShader);
 
@@ -53,15 +50,9 @@ void scratch::Shader::reload() {
 
     checkSuccessfulShaderLink(shaderProgram);
 
-    std::cout << "Deleting Shader: " << shaderId << std::endl;
-    glDeleteProgram(shaderId);
-    std::cout << "Setting new Shader ID: " << shaderProgram << std::endl;
-    shaderId = shaderProgram;
-    std::cout << "Set new Shader ID: " << shaderId << std::endl;
-
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-    std::cout << "Finished reloading shader..." << std::endl;
+    return shaderProgram;
 }
 
 void scratch::Shader::setBool(const std::string &name, bool value) const {
@@ -123,7 +114,7 @@ void scratch::Shader::checkSuccessfulShaderCompilation(int shaderId) {
     glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        std::cout << "ERROR::scratch::SHADER::VERTEX::COMPILATION_FAILED\n"
+        std::cout << "ERROR::scratch::SHADER::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
         throw std::runtime_error("Shader Compilation Unsuccessful");
     }
@@ -145,6 +136,9 @@ void scratch::Shader::checkSuccessfulShaderLink(int shaderProgramId) {
 void scratch::Shader::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
+    writer.String("id");
+    writer.Uint(Id);
+
     writer.String("vertexPath");
     writer.String(_vertexPath.c_str(), static_cast<rapidjson::SizeType>(_vertexPath.length()));
 
@@ -154,6 +148,13 @@ void scratch::Shader::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>
     writer.EndObject();
 }
 
+void scratch::Shader::deserialize(const rapidjson::Value &object) {
+    Id = object["id"].GetUint();
+    _vertexPath = object["vertexPath"].GetString();
+    _fragmentPath = object["fragmentPath"].GetString();
+    compileShaders();
+}
+
 const std::string &scratch::Shader::getVertexPath() const {
     return _vertexPath;
 }
@@ -161,3 +162,5 @@ const std::string &scratch::Shader::getVertexPath() const {
 const std::string &scratch::Shader::getFragmentPath() const {
     return _fragmentPath;
 }
+
+

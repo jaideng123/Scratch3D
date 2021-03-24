@@ -9,6 +9,7 @@ namespace scratch { class Shader; }
 #include "glm/glm.hpp"
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
+#include <include/rapidjson/document.h>
 
 namespace scratch {
     class DirectionalLight {
@@ -37,6 +38,8 @@ namespace scratch {
         void ApplyToShader(Shader &shader);
 
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
+
+        void deserialize(const rapidjson::Value &object);
 
     private:
         glm::vec3 _direction;

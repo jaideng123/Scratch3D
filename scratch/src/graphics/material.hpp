@@ -56,11 +56,11 @@ namespace scratch {
             setStateParameters();
         }
 
-        void setShader(Shader *shader) {
+        void setShader(std::shared_ptr<scratch::Shader> shader) {
             _shader = shader;
         }
 
-        Shader *getShader() {
+        std::shared_ptr<scratch::Shader> getShader() {
             return _shader;
         }
 
@@ -198,6 +198,6 @@ namespace scratch {
 
     private:
         std::vector<Texture> _textures;
-        scratch::Shader *_shader;
+        std::shared_ptr<scratch::Shader> _shader;
     };
 } // namespace scratch

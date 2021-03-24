@@ -170,6 +170,9 @@ void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> 
     }
     writer.EndArray();
 
+    writer.String("defaultShaderId");
+    writer.Uint(defaultShader->Id);
+
     writer.EndObject();
 }
 
@@ -182,6 +185,17 @@ void scratch::Model::deserialize(const rapidjson::Value &object) {
 
 scratch::Model::Model() {
 
+}
+
+const std::shared_ptr<scratch::Shader> &scratch::Model::getDefaultShader() const {
+    return defaultShader;
+}
+
+void scratch::Model::setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader) {
+    Model::defaultShader = defaultShader;
+    for (auto &mesh : meshes) {
+        mesh.material->setShader(defaultShader);
+    }
 }
 
 glm::vec3 ConvertVector3(aiVector3D aiVec3) {

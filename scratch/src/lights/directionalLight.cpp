@@ -70,3 +70,10 @@ void scratch::DirectionalLight::serialize(rapidjson::PrettyWriter<rapidjson::Str
 
     writer.EndObject();
 }
+
+void scratch::DirectionalLight::deserialize(const rapidjson::Value &object) {
+    _direction = scratch::StringConverter::parsevec3(object["direction"].GetString());
+    _ambient = scratch::StringConverter::parsevec3(object["ambient"].GetString());
+    _diffuse = scratch::StringConverter::parsevec3(object["diffuse"].GetString());
+    _specular = scratch::StringConverter::parsevec3(object["specular"].GetString());
+}
