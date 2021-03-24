@@ -144,7 +144,8 @@ void scratch::SceneNode::deserialize(const rapidjson::Value &object,
     _scale = scratch::StringConverter::parsevec3(object["scale"].GetString());
 
     glm::vec4 rotationVector = scratch::StringConverter::parsevec4(object["rotation"].GetString());
-    _rotation = glm::quat(rotationVector.x, rotationVector.y, rotationVector.z, rotationVector.w);
+    // w is first in this constructor for... reasons?
+    _rotation = glm::quat(rotationVector.w, rotationVector.x, rotationVector.y, rotationVector.z);
 
     auto childrenArray = object["children"].GetArray();
     _children.clear();
