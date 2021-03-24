@@ -152,7 +152,7 @@ void scratch::Shader::deserialize(const rapidjson::Value &object) {
     Id = object["id"].GetUint();
     _vertexPath = object["vertexPath"].GetString();
     _fragmentPath = object["fragmentPath"].GetString();
-    compileShaders();
+    shaderId = compileShaders();
 }
 
 const std::string &scratch::Shader::getVertexPath() const {
