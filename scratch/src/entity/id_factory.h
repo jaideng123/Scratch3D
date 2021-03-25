@@ -1,17 +1,20 @@
 #pragma once
+
 #include "entity.hpp"
 
 namespace scratch {
 
-    class IDFactory {
+    class IdFactory {
     private:
         static const unsigned int MAX_ID = (255) + (255 << 8) + (255 << 16);
         unsigned int _lastGeneratedId;
     public:
-        IDFactory();
-        void setLastGeneratedId(unsigned int id);
-        unsigned int getLastGeneratedId();
+        IdFactory();
 
-        unsigned int generate_id();
+        void setLastGeneratedId(unsigned int id);
+
+        unsigned int getLastGeneratedId() const;
+
+        unsigned int generateId();
     };
 }

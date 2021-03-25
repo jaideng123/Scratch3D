@@ -20,8 +20,8 @@ namespace scratch {
         void setCamera(scratch::Camera *newCamera);
 
     private:
-        glm::mat4 currentTransform;
-        scratch::Camera *camera;
+        glm::mat4 _currentTransform{};
+        scratch::Camera *_camera;
         constexpr static const float Y_OFFSET = 30.0f;
     };
 

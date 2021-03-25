@@ -7,28 +7,28 @@
 #include <include/rapidjson/document.h>
 
 
-scratch::Shader::Shader(const unsigned int Id, const std::string vertexPath, const std::string fragmentPath) {
-    this->Id = Id;
+scratch::Shader::Shader(const unsigned int Id, const std::string &vertexPath, const std::string fragmentPath) {
+    this->_id = Id;
 
     _vertexPath = vertexPath;
     _fragmentPath = fragmentPath;
 
-    shaderId = compileShaders();
+    _shaderId = compileShaders();
 }
 
-void scratch::Shader::use() {
-    glUseProgram(shaderId);
+void scratch::Shader::use() const {
+    glUseProgram(_shaderId);
 }
 
 void scratch::Shader::reload() {
     std::cout << "Reloading shader..." << std::endl;
     int newShaderId = compileShaders();
 
-    std::cout << "Deleting Shader: " << shaderId << std::endl;
-    glDeleteProgram(shaderId);
+    std::cout << "Deleting Shader: " << _shaderId << std::endl;
+    glDeleteProgram(_shaderId);
     std::cout << "Setting new Shader ID: " << newShaderId << std::endl;
-    shaderId = newShaderId;
-    std::cout << "Set new Shader ID: " << shaderId << std::endl;
+    _shaderId = newShaderId;
+    std::cout << "Set new Shader ID: " << _shaderId << std::endl;
 
     std::cout << "Finished reloading shader..." << std::endl;
 }
@@ -56,27 +56,27 @@ int scratch::Shader::compileShaders() {
 }
 
 void scratch::Shader::setBool(const std::string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(shaderId, name.c_str()), (int) value);
+    glUniform1i(glGetUniformLocation(_shaderId, name.c_str()), (int) value);
 }
 
 void scratch::Shader::setInt(const std::string &name, int value) const {
-    glUniform1i(glGetUniformLocation(shaderId, name.c_str()), value);
+    glUniform1i(glGetUniformLocation(_shaderId, name.c_str()), value);
 }
 
 void scratch::Shader::setUnsignedInt(const std::string &name, unsigned int value) const {
-    glUniform1ui(glGetUniformLocation(shaderId, name.c_str()), value);
+    glUniform1ui(glGetUniformLocation(_shaderId, name.c_str()), value);
 }
 
 void scratch::Shader::setFloat(const std::string &name, float value) const {
-    glUniform1f(glGetUniformLocation(shaderId, name.c_str()), value);
+    glUniform1f(glGetUniformLocation(_shaderId, name.c_str()), value);
 }
 
 void scratch::Shader::setMat4(const std::string &name, glm::mat4 value) const {
-    glUniformMatrix4fv(glGetUniformLocation(shaderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+    glUniformMatrix4fv(glGetUniformLocation(_shaderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void scratch::Shader::setVec3(const std::string &name, glm::vec3 value) const {
-    glUniform3f(glGetUniformLocation(shaderId, name.c_str()), value.x, value.y, value.z);
+    glUniform3f(glGetUniformLocation(_shaderId, name.c_str()), value.x, value.y, value.z);
 }
 
 int scratch::Shader::generateAndCompileShader(std::string sourceFileLocation, int shaderType) {
@@ -137,7 +137,7 @@ void scratch::Shader::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>
     writer.StartObject();
 
     writer.String("id");
-    writer.Uint(Id);
+    writer.Uint(_id);
 
     writer.String("vertexPath");
     writer.String(_vertexPath.c_str(), static_cast<rapidjson::SizeType>(_vertexPath.length()));
@@ -149,10 +149,10 @@ void scratch::Shader::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>
 }
 
 void scratch::Shader::deserialize(const rapidjson::Value &object) {
-    Id = object["id"].GetUint();
+    _id = object["id"].GetUint();
     _vertexPath = object["vertexPath"].GetString();
     _fragmentPath = object["fragmentPath"].GetString();
-    shaderId = compileShaders();
+    _shaderId = compileShaders();
 }
 
 const std::string &scratch::Shader::getVertexPath() const {
@@ -161,6 +161,14 @@ const std::string &scratch::Shader::getVertexPath() const {
 
 const std::string &scratch::Shader::getFragmentPath() const {
     return _fragmentPath;
+}
+
+unsigned int scratch::Shader::getShaderId() const {
+    return _shaderId;
+}
+
+unsigned int scratch::Shader::getId() const {
+    return _id;
 }
 
 

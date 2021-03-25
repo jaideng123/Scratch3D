@@ -3,7 +3,7 @@
 #include <memory>
 #include <entity/entity.hpp>
 #include <entity/id_factory.h>
-#include <lights/directionalLight.h>
+#include <lights/directional_light.h>
 #include "scene_node.h"
 #include "camera/camera.h"
 
@@ -39,13 +39,13 @@ namespace scratch {
         void loadScene(std::string scenePath);
 
     private:
-        scratch::IDFactory idFactory;
-        scratch::SceneNode rootNode;
-        std::vector<std::shared_ptr<scratch::Renderable>> renderables;
-        std::vector<std::shared_ptr<scratch::Entity>> entities;
-        std::vector<std::shared_ptr<scratch::Shader>> shaders;
-        std::vector<std::shared_ptr<scratch::Model>> models;
-        std::shared_ptr<scratch::DirectionalLight> directionalLight;
+        scratch::IdFactory _idFactory;
+        scratch::SceneNode _rootNode;
+        std::vector<std::shared_ptr<scratch::Renderable>> _renderables;
+        std::vector<std::shared_ptr<scratch::Entity>> _entities;
+        std::vector<std::shared_ptr<scratch::Shader>> _shaders;
+        std::vector<std::shared_ptr<scratch::Model>> _models;
+        std::shared_ptr<scratch::DirectionalLight> _directionalLight;
     };
 
 }

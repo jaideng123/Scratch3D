@@ -1,11 +1,12 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
-#include <glad/glad.h> // holds all OpenGL type declarations
+#include <glad/glad.h>
 
-#include "converter/stringConverter.h"
+#include "converter/string_converter.h"
 #include "shader.h"
 
 namespace scratch {
@@ -40,12 +41,11 @@ namespace scratch {
 
     class Material {
     public:
-        unsigned int Id;
         std::map<std::string, scratch::Parameter> parameters;
 
         Material(std::vector<Texture> textures) {
-            Id = rand();
-            _textures = textures;
+            _id = rand();
+            _textures = std::move(textures);
         }
 
         Material() = default;
@@ -62,6 +62,10 @@ namespace scratch {
 
         std::shared_ptr<scratch::Shader> getShader() {
             return _shader;
+        }
+
+        unsigned int getId() const {
+            return _id;
         }
 
         void setBool(const std::string &name, bool value) {
@@ -126,7 +130,7 @@ namespace scratch {
                     number = std::to_string(heightNr++); // transfer unsigned int to stream
 
                 // now set the sampler to the correct texture unit
-                glUniform1i(glGetUniformLocation(_shader->shaderId, ("material." + name + number).c_str()), i);
+                glUniform1i(glGetUniformLocation(_shader->getShaderId(), ("material." + name + number).c_str()), i);
                 // and finally bind the texture
                 glBindTexture(GL_TEXTURE_2D, _textures[i].id);
             }
@@ -197,6 +201,7 @@ namespace scratch {
         }
 
     private:
+        unsigned int _id;
         std::vector<Texture> _textures;
         std::shared_ptr<scratch::Shader> _shader;
     };

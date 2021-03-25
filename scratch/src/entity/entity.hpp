@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <glm/glm.hpp>
 #include <memory>
+#include <utility>
 #include "graphics/renderable.h"
 #include "graphics/model.h"
 
@@ -14,7 +15,7 @@ namespace scratch {
 
     public:
         Entity(const unsigned int id, std::shared_ptr<scratch::Renderable> renderable) {
-            _renderable = renderable;
+            _renderable = std::move(renderable);
             _id = id;
         }
 

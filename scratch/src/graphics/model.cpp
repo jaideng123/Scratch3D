@@ -8,31 +8,27 @@
 
 #include "model.h"
 
-#include "shader.h"
-#include "graphics/mesh.hpp"
-#include "graphics/material.hpp"
-
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
 
-unsigned int TextureFromFile(const std::string path, const std::string &directory, bool gamma = false);
+unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma = false);
 
-unsigned int TextureFromFile(const std::string path, const std::string &directory, bool gamma, int wrapMode);
+unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma, int wrapMode);
 
-glm::vec3 ConvertVector3(aiVector3D aiVec3);
+glm::vec3 convertVector3(aiVector3D aiVec3);
 
-scratch::Model::Model(unsigned int id, std::string path) {
-    Id = id;
-    modelPath = path;
+scratch::Model::Model(unsigned int id, const std::string &path) {
+    _id = id;
+    _modelPath = path;
     loadModel(path);
 }
 
 std::vector<scratch::Mesh> &scratch::Model::getMeshes() {
-    return meshes;
+    return _meshes;
 }
 
-void scratch::Model::loadModel(std::string path) {
+void scratch::Model::loadModel(const std::string &path) {
     Assimp::Importer import;
     // Import scene data (Triangulate = Make all faces 3 indices(x,y,z))
     const aiScene *scene = import.ReadFile(path,
@@ -43,11 +39,11 @@ void scratch::Model::loadModel(std::string path) {
         return;
     }
     // We assume that all textures are in the same directory as the scene
-    directory = path.substr(0, path.find_last_of('/'));
+    _directory = path.substr(0, path.find_last_of('/'));
 
     for (size_t i = 0; i < scene->mNumMaterials; ++i) {
         Material material = transformMaterial(scene->mMaterials[i]);
-        materials.push_back(material);
+        _materials.push_back(material);
     }
 
     processNode(scene->mRootNode, scene);
@@ -58,7 +54,7 @@ void scratch::Model::processNode(aiNode *node, const aiScene *scene) {
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh convertedMesh = processMesh(mesh, scene);
-        meshes.push_back(convertedMesh);
+        _meshes.push_back(convertedMesh);
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -100,11 +96,11 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 
     // Walk through each of the mesh's vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-        Vertex vertex;
+        Vertex vertex{};
         // positions
-        vertex.position = ConvertVector3(mesh->mVertices[i]);
+        vertex.position = convertVector3(mesh->mVertices[i]);
         // normals
-        vertex.normal = ConvertVector3(mesh->mNormals[i]);
+        vertex.normal = convertVector3(mesh->mNormals[i]);
         // texture coordinates
         if (mesh->HasTextureCoords(0)) {
             glm::vec2 vec;
@@ -117,9 +113,9 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
             vertex.texCoords = glm::vec2(0.0f, 0.0f);
         if (mesh->HasTangentsAndBitangents()) {
             // tangent
-            vertex.tangent = ConvertVector3(mesh->mTangents[i]);
+            vertex.tangent = convertVector3(mesh->mTangents[i]);
             // bitangent
-            vertex.bitangent = ConvertVector3(mesh->mBitangents[i]);
+            vertex.bitangent = convertVector3(mesh->mBitangents[i]);
         }
         vertices.push_back(vertex);
     }
@@ -132,90 +128,93 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, &materials[mesh->mMaterialIndex]);
+    return Mesh(vertices, indices, &_materials[mesh->mMaterialIndex]);
 }
 
 std::vector<scratch::Texture> scratch::Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-                                                                   std::string typeName) {
+                                                                   const std::string &typeName) {
     std::vector<Texture> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
         Texture texture;
-        texture.id = TextureFromFile(str.C_Str(), directory);
+        texture.id = textureFromFile(str.C_Str(), _directory);
         texture.type = typeName;
-        texture.path = directory + "/" + str.C_Str();
+        texture.path = _directory + "/" + str.C_Str();
         textures.push_back(texture);
     }
     return textures;
 }
 
 const std::string &scratch::Model::getModelPath() const {
-    return modelPath;
+    return _modelPath;
 }
 
 void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
     writer.String("id");
-    writer.Uint(Id);
+    writer.Uint(_id);
 
     writer.String("modelPath");
-    writer.String(modelPath.c_str(), static_cast<rapidjson::SizeType>(modelPath.length()));
+    writer.String(_modelPath.c_str(), static_cast<rapidjson::SizeType>(_modelPath.length()));
 
     writer.String("materials");
     writer.StartArray();
-    for (auto &material : materials) {
+    for (auto &material : _materials) {
         material.serialize(writer);
     }
     writer.EndArray();
 
     writer.String("defaultShaderId");
-    writer.Uint(defaultShader->Id);
+    writer.Uint(_defaultShader->getId());
 
     writer.EndObject();
 }
 
 void scratch::Model::deserialize(const rapidjson::Value &object) {
-    Id = object["id"].GetUint();
-    modelPath = object["modelPath"].GetString();
-    this->loadModel(modelPath);
+    _id = object["id"].GetUint();
+    _modelPath = object["modelPath"].GetString();
+    this->loadModel(_modelPath);
     //TODO handle materials
 }
 
 scratch::Model::Model() {
-
 }
 
 const std::shared_ptr<scratch::Shader> &scratch::Model::getDefaultShader() const {
-    return defaultShader;
+    return _defaultShader;
 }
 
 void scratch::Model::setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader) {
-    Model::defaultShader = defaultShader;
-    for (auto &mesh : meshes) {
-        mesh.material->setShader(defaultShader);
+    Model::_defaultShader = defaultShader;
+    for (auto &mesh : _meshes) {
+        mesh.getMaterial()->setShader(defaultShader);
     }
 }
 
-glm::vec3 ConvertVector3(aiVector3D aiVec3) {
-    glm::vec3 newVec3 = glm::vec3(0);
+unsigned int scratch::Model::getId() const {
+    return _id;
+}
+
+glm::vec3 convertVector3(aiVector3D aiVec3) {
+    auto newVec3 = glm::vec3(0);
     newVec3.x = aiVec3.x;
     newVec3.y = aiVec3.y;
     newVec3.z = aiVec3.z;
     return newVec3;
 }
 
-unsigned int TextureFromFile(const std::string path, const std::string &directory, bool gamma) {
-    return TextureFromFile(path, directory, gamma, GL_REPEAT);
+unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma) {
+    return textureFromFile(path, directory, gamma, GL_REPEAT);
 }
 
-unsigned int TextureFromFile(const std::string path, const std::string &directory, bool gamma, int wrapMode) {
+unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma, int wrapMode) {
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
 
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
+    unsigned int textureId;
+    glGenTextures(1, &textureId);
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
@@ -228,7 +227,7 @@ unsigned int TextureFromFile(const std::string path, const std::string &director
         else if (nrComponents == 4)
             format = GL_RGBA;
 
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glBindTexture(GL_TEXTURE_2D, textureId);
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -243,5 +242,5 @@ unsigned int TextureFromFile(const std::string path, const std::string &director
         stbi_image_free(data);
     }
 
-    return textureID;
+    return textureId;
 }

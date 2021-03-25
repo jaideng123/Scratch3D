@@ -4,11 +4,11 @@
 
 #include "id_factory.h"
 
-scratch::IDFactory::IDFactory() {
+scratch::IdFactory::IdFactory() {
     _lastGeneratedId = 0;
 }
 
-unsigned int scratch::IDFactory::generate_id() {
+unsigned int scratch::IdFactory::generateId() {
     unsigned int new_id = this->_lastGeneratedId + 1;
     _lastGeneratedId = new_id;
     if (new_id > MAX_ID) {
@@ -17,10 +17,10 @@ unsigned int scratch::IDFactory::generate_id() {
     return new_id;
 }
 
-void scratch::IDFactory::setLastGeneratedId(unsigned int id) {
+void scratch::IdFactory::setLastGeneratedId(unsigned int id) {
     _lastGeneratedId = id;
 }
 
-unsigned int scratch::IDFactory::getLastGeneratedId() {
+unsigned int scratch::IdFactory::getLastGeneratedId() const {
     return _lastGeneratedId;
 }

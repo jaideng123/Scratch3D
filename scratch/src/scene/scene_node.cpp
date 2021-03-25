@@ -2,12 +2,9 @@
 // Created by JJJai on 3/13/2021.
 //
 
-#include "scene_node.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <include/rapidjson/document.h>
 
+#include "scene_node.h"
 
 glm::mat4 scratch::SceneNode::generateTransformMatrix() {
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), _position);
@@ -63,11 +60,11 @@ const std::vector<std::shared_ptr<scratch::SceneNode>> &scratch::SceneNode::getC
 }
 
 const std::shared_ptr<scratch::Entity> &scratch::SceneNode::getEntity() const {
-    return entity;
+    return _entity;
 }
 
 void scratch::SceneNode::setEntity(const std::shared_ptr<scratch::Entity> &entity) {
-    SceneNode::entity = entity;
+    SceneNode::_entity = entity;
 }
 
 unsigned int scratch::SceneNode::getId() const {
@@ -96,8 +93,8 @@ void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuff
     writer.Uint(_id);
 
     writer.String("entityId");
-    if (entity != nullptr) {
-        writer.Uint(entity->getID());
+    if (_entity != nullptr) {
+        writer.Uint(_entity->getID());
     } else {
         writer.Null();
     }
@@ -129,12 +126,12 @@ void scratch::SceneNode::deserialize(const rapidjson::Value &object,
                                      const std::vector<std::shared_ptr<scratch::Entity>> &entities) {
     _id = object["id"].GetUint();
 
-    entity = nullptr;
+    _entity = nullptr;
     if (!object["entityId"].IsNull()) {
         unsigned int entityId = object["entityId"].GetUint();
         for (auto &entity : entities) {
             if (entity->getID() == entityId) {
-                this->entity = entity;
+                this->_entity = entity;
             }
         }
     }

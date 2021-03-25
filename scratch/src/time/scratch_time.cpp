@@ -5,22 +5,22 @@
 #include <GLFW/glfw3.h>
 #include "scratch_time.h"
 
-void scratch::Time::InitializeClock() {
-    lastFrameTime = glfwGetTime();
-    elapsedTime = 0;
+void scratch::Time::initializeClock() {
+    _lastFrameTime = glfwGetTime();
+    _elapsedTime = 0;
 }
 
-void scratch::Time::UpdateClock() {
+void scratch::Time::updateClock() {
     double currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrameTime;
-    lastFrameTime = currentFrame;
-    elapsedTime += deltaTime;
+    _deltaTime = currentFrame - _lastFrameTime;
+    _lastFrameTime = currentFrame;
+    _elapsedTime += _deltaTime;
 }
 
-float scratch::Time::GetDeltaTime() {
-    return deltaTime;
+float scratch::Time::getDeltaTime() {
+    return _deltaTime;
 }
 
-double scratch::Time::GetElapsedTime() {
-    return elapsedTime;
+double scratch::Time::getElapsedTime() {
+    return _elapsedTime;
 }

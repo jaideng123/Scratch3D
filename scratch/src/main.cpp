@@ -5,10 +5,8 @@
 #include "imgui.h"
 
 // Standard Headers
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <vector>
 #include <optional>
 #include <gui/transform_gizmo.h>
 #include <gui/main_menu_bar.h>
@@ -19,9 +17,9 @@
 #include "graphics/render_system.h"
 
 
-void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void mouseCallback(GLFWwindow *window, double xpos, double ypos);
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
@@ -37,12 +35,12 @@ scratch::SceneManager sceneManager = scratch::SceneManager();
 
 int main() {
     RenderSystem::setup();
-    scratch::Time::InitializeClock();
+    scratch::Time::initializeClock();
 
     // Setup various input callbacks
-    glfwSetCursorPosCallback(scratch::MainWindow, mouse_callback);
+    glfwSetCursorPosCallback(scratch::MainWindow, mouseCallback);
     glfwSetKeyCallback(scratch::MainWindow, keyCallback);
-    glfwSetMouseButtonCallback(scratch::MainWindow, mouse_button_callback);
+    glfwSetMouseButtonCallback(scratch::MainWindow, mouseButtonCallback);
 
 
     std::cout << "Loading Shaders..." << std::endl;
@@ -81,7 +79,7 @@ int main() {
 
     scratch::MainCamera = new scratch::Camera();
 
-    scratch::TransformGizmo transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
+    auto transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
 
     scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
 
@@ -89,7 +87,7 @@ int main() {
     // Rendering Loop
     while (glfwWindowShouldClose(scratch::MainWindow) == false) {
         glfwPollEvents();
-        scratch::Time::UpdateClock();
+        scratch::Time::updateClock();
 
         handleInput();
 
@@ -120,7 +118,7 @@ int main() {
 
 // glfw: whenever the mouse is clicked, this callback is called
 // -------------------------------------------------------
-void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     if (ImGui::GetIO().WantCaptureMouse) {
         return;
     }
@@ -131,7 +129,7 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
     if (ImGui::GetIO().WantCaptureMouse) {
         return;
     }
@@ -142,8 +140,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
         firstMouse = false;
     }
 
-    double xoffset = xpos - lastX;
-    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
@@ -152,7 +150,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
         return;
     }
 
-    scratch::MainCamera->ProcessMouseMovement(xoffset, yoffset);
+    scratch::MainCamera->processMouseMovement(xoffset, yoffset);
 }
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -191,13 +189,13 @@ void handleInput() {
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(scratch::MainWindow, true);
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_W) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::FORWARD, scratch::Time::GetDeltaTime());
+            scratch::MainCamera->processKeyboard(scratch::FORWARD, scratch::Time::getDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_S) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::BACKWARD, scratch::Time::GetDeltaTime());
+            scratch::MainCamera->processKeyboard(scratch::BACKWARD, scratch::Time::getDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_A) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::LEFT, scratch::Time::GetDeltaTime());
+            scratch::MainCamera->processKeyboard(scratch::LEFT, scratch::Time::getDeltaTime());
         if (glfwGetKey(scratch::MainWindow, GLFW_KEY_D) == GLFW_PRESS)
-            scratch::MainCamera->ProcessKeyboard(scratch::RIGHT, scratch::Time::GetDeltaTime());
+            scratch::MainCamera->processKeyboard(scratch::RIGHT, scratch::Time::getDeltaTime());
     } else {
         glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }

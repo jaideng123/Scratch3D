@@ -60,7 +60,7 @@ namespace scratch {
         glm::quat _rotation;
         std::weak_ptr<SceneNode> _parent;
         std::vector<std::shared_ptr<SceneNode>> _children;
-        std::shared_ptr<scratch::Entity> entity;
+        std::shared_ptr<scratch::Entity> _entity;
         unsigned int _id;
     };
 

@@ -4,13 +4,13 @@
 
 #include "color.h"
 
-scratch::Color::Color(const glm::vec3 &value) : value(value) {}
+scratch::Color::Color(const glm::vec3 &value) : _value(value) {}
 
 const glm::vec3 &scratch::Color::getValue() const {
-    return value;
+    return _value;
 }
 
 void scratch::Color::setValue(const glm::vec3 &value) {
-    Color::value = value;
+    Color::_value = value;
 }
 

@@ -14,19 +14,14 @@
 #include <include/rapidjson/document.h>
 
 
-namespace scratch { class Shader; }
-namespace scratch { class Material; }
-
-
 namespace scratch {
     class Model {
     public:
-        unsigned int Id;
-
-        /*  Functions   */
-        Model(unsigned int id, std::string path);
+        Model(unsigned int id, const std::string& path);
 
         Model();
+
+        unsigned int getId() const;
 
         std::vector<scratch::Mesh> &getMeshes();
 
@@ -41,15 +36,17 @@ namespace scratch {
         void setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader);
 
     private:
+        unsigned int _id;
+
         /*  Model Data  */
-        std::vector<Mesh> meshes;
-        std::vector<Material> materials;
-        std::string directory;
-        std::string modelPath;
-        std::shared_ptr<scratch::Shader> defaultShader;
+        std::vector<Mesh> _meshes;
+        std::vector<Material> _materials;
+        std::string _directory;
+        std::string _modelPath;
+        std::shared_ptr<scratch::Shader> _defaultShader;
 
         /*  Functions   */
-        void loadModel(std::string path);
+        void loadModel(const std::string& path);
 
         void processNode(aiNode *node, const aiScene *scene);
 
@@ -58,6 +55,6 @@ namespace scratch {
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 
         std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-                                                  std::string typeName);
+                                                  const std::string &typeName);
     };
 } // namespace scratch

@@ -30,7 +30,7 @@ void scratch::TransformGizmo::render() {
         mCurrentGizmoOperation = ImGuizmo::SCALE;
 
     float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    float *matrixPointer = glm::value_ptr(currentTransform);
+    float *matrixPointer = glm::value_ptr(_currentTransform);
     ImGuizmo::DecomposeMatrixToComponents(matrixPointer, matrixTranslation, matrixRotation, matrixScale);
     ImGui::InputFloat3("Tr", matrixTranslation);
     ImGui::InputFloat3("Rt", matrixRotation);
@@ -62,27 +62,27 @@ void scratch::TransformGizmo::render() {
             break;
     }
     ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
-    glm::mat4 viewMatrix = camera->GetViewMatrix();
-    glm::mat4 projectionMatrix = camera->GetProjectionMatrix();
+    glm::mat4 viewMatrix = _camera->getViewMatrix();
+    glm::mat4 projectionMatrix = _camera->getProjectionMatrix();
     ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
                          mCurrentGizmoOperation, mCurrentGizmoMode, matrixPointer, NULL,
                          useSnap ? &snap.x : NULL);
-    currentTransform = glm::make_mat4(matrixPointer);
+    _currentTransform = glm::make_mat4(matrixPointer);
     ImGui::End();
 }
 
 void scratch::TransformGizmo::setCurrentTransform(glm::mat4 transform) {
-    currentTransform = transform;
+    _currentTransform = transform;
 }
 
 glm::mat4 scratch::TransformGizmo::getCurrentTransform() {
-    return currentTransform;
+    return _currentTransform;
 }
 
 void scratch::TransformGizmo::setCamera(scratch::Camera *newCamera) {
-    camera = newCamera;
+    _camera = newCamera;
 }
 
 scratch::TransformGizmo::TransformGizmo(scratch::Camera *newCamera) {
-    camera = newCamera;
+    _camera = newCamera;
 }

@@ -2,7 +2,7 @@
 // Created by JJJai on 7/11/2020.
 //
 
-#include "modelRenderable.h"
+#include "model_renderable.h"
 
 #include <utility>
 #include "graphics/model.h"
@@ -10,7 +10,7 @@
 const std::string scratch::ModelRenderable::TYPE = "MODEL";
 
 std::vector<scratch::Mesh> &scratch::ModelRenderable::getMeshes() {
-    return model->getMeshes();
+    return _model->getMeshes();
 }
 
 
@@ -24,16 +24,16 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.String("type");
     writer.String(TYPE.c_str(), static_cast<rapidjson::SizeType>(TYPE.length()));
     writer.String("id");
-    writer.Uint(Id);
+    writer.Uint(id);
     writer.String("modelId");
-    writer.Uint(model->Id);
+    writer.Uint(_model->getId());
 
     writer.EndObject();
 }
 
-scratch::ModelRenderable::ModelRenderable(unsigned int Id, std::shared_ptr<scratch::Model> model) : model(
+scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model) : _model(
         std::move(model)) {
-    this->Id = Id;
+    this->id = id;
 }
 
 scratch::ModelRenderable::ModelRenderable() {}

@@ -2,8 +2,8 @@
 // Created by JJJai on 7/19/2020.
 //
 
-#include <converter/stringConverter.h>
-#include "directionalLight.h"
+#include <converter/string_converter.h>
+#include "directional_light.h"
 #include "graphics/shader.h"
 
 scratch::DirectionalLight::DirectionalLight(const glm::vec3 &direction, const scratch::Color &ambient,
@@ -42,7 +42,7 @@ void scratch::DirectionalLight::setSpecular(const scratch::Color &specular) {
     _specular = specular;
 }
 
-void scratch::DirectionalLight::ApplyToShader(scratch::Shader &shader) {
+void scratch::DirectionalLight::applyToShader(scratch::Shader &shader) {
     shader.setVec3("dirLight.direction", _direction);
     shader.setVec3("dirLight.ambient", _ambient.getValue());
     shader.setVec3("dirLight.diffuse", _diffuse.getValue());

@@ -2,17 +2,18 @@
 namespace scratch {
     class Time {
     public:
-        static void InitializeClock();
-        static void UpdateClock();
+        static void initializeClock();
 
-        static float GetDeltaTime();
+        static void updateClock();
 
-        static double GetElapsedTime();
+        static float getDeltaTime();
+
+        static double getElapsedTime();
 
     private:
-        inline static double elapsedTime;
-        inline static float deltaTime;
-        inline static double lastFrameTime;
+        inline static double _elapsedTime;
+        inline static float _deltaTime;
+        inline static double _lastFrameTime;
     };
 
 }

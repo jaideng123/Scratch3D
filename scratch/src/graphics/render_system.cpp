@@ -14,7 +14,7 @@
 #include "main.h"
 
 
-void GLAPIENTRY MessageCallback(GLenum source,
+void GLAPIENTRY messageCallback(GLenum source,
                                 GLenum type,
                                 GLuint id,
                                 GLenum severity,
@@ -56,7 +56,7 @@ void RenderSystem::setup() {
     glEnable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(MessageCallback, nullptr);
+    glDebugMessageCallback(messageCallback, nullptr);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -78,21 +78,21 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 view = scratch::MainCamera->GetViewMatrix();
-    glm::mat4 projection = scratch::MainCamera->GetProjectionMatrix();
+    glm::mat4 view = scratch::MainCamera->getViewMatrix();
+    glm::mat4 projection = scratch::MainCamera->getProjectionMatrix();
     glm::vec3 viewPosition = scratch::MainCamera->getPosition();
 
     std::optional<scratch::Material> currentMaterial = {};
     for (auto mesh : renderQueue) {
-        if (!currentMaterial.has_value() || mesh.material->Id != currentMaterial.value().Id) {
-            currentMaterial = *mesh.material;
+        if (!currentMaterial.has_value() || mesh.getMaterial()->getId() != currentMaterial.value().getId()) {
+            currentMaterial = *mesh.getMaterial();
             currentMaterial.value().activate();
             currentMaterial.value().getShader()->setMat4("view", view);
             currentMaterial.value().getShader()->setMat4("projection", projection);
             currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
-            directionalLight.ApplyToShader(*currentMaterial.value().getShader());
+            directionalLight.applyToShader(*currentMaterial.value().getShader());
         }
-        mesh.Draw();
+        mesh.draw();
     }
 
     ImGui::Render();

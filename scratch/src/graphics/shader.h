@@ -12,11 +12,8 @@
 namespace scratch {
     class Shader {
     public:
-        unsigned int Id;
-        unsigned int shaderId;
-
         // Read + compile shader
-        Shader(const unsigned int Id, const std::string vertexPath, const std::string fragmentPath);
+        Shader(const unsigned int Id, const std::string& vertexPath, std::string fragmentPath);
 
         Shader() = default;
 
@@ -25,8 +22,12 @@ namespace scratch {
 
         const std::string &getFragmentPath() const;
 
+        unsigned int getShaderId() const;
+
+        unsigned int getId() const;
+
         // Activate shader
-        void use();
+        void use() const;
 
         void reload();
 
@@ -48,6 +49,8 @@ namespace scratch {
 
 
     private:
+        unsigned int _id;
+        unsigned int _shaderId;
         std::string _vertexPath;
         std::string _fragmentPath;
 

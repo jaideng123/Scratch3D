@@ -35,7 +35,7 @@ namespace scratch {
 
         void setSpecular(const scratch::Color &_specular);
 
-        void ApplyToShader(Shader &shader);
+        void applyToShader(Shader &shader);
 
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
 
