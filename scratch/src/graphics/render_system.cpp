@@ -35,7 +35,7 @@ void RenderSystem::setup() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    scratch::MainWindow = glfwCreateWindow(scratch::defaultWidth, scratch::defaultHeight, "Scratch", nullptr, nullptr);
+    scratch::MainWindow = glfwCreateWindow(scratch::DEFAULT_WIDTH, scratch::DEFAULT_HEIGHT, "Scratch", nullptr, nullptr);
 
     // Check for Valid Context
     if (scratch::MainWindow == nullptr) {
@@ -69,8 +69,8 @@ void RenderSystem::setup() {
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(scratch::MainWindow, true);
-    const char *glsl_version = "#version 400 core";
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    const char *glslVersion = "#version 400 core";
+    ImGui_ImplOpenGL3_Init(glslVersion);
 }
 
 void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch::DirectionalLight &directionalLight) {

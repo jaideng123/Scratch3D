@@ -1,18 +1,18 @@
 #pragma once
 
 // System Headers
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <btBulletDynamicsCommon.h>
-#include <memory>
-#include <camera/camera.h>
 #include <GLFW/glfw3.h>
-namespace scratch {
-// Define Some Constants
-    const int defaultWidth = 1280;
-    const int defaultHeight = 720;
+#include "camera/camera.h"
+#include "managers.h"
 
-    inline Camera* MainCamera = nullptr;
-    inline GLFWwindow* MainWindow = nullptr;
+namespace scratch {
+
+    // Define Some Constants
+    const int DEFAULT_WIDTH = 1280;
+    const int DEFAULT_HEIGHT = 720;
+
+    inline Camera *MainCamera = nullptr;
+    inline GLFWwindow *MainWindow = nullptr;
+
+    inline Managers *ScratchManagers = nullptr;
 }

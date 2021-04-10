@@ -41,10 +41,12 @@ namespace scratch {
     private:
         scratch::IdFactory _idFactory;
         scratch::SceneNode _rootNode;
-        std::vector<std::shared_ptr<scratch::Renderable>> _renderables;
-        std::vector<std::shared_ptr<scratch::Entity>> _entities;
+        // TODO: move to ResourceManager
         std::vector<std::shared_ptr<scratch::Shader>> _shaders;
         std::vector<std::shared_ptr<scratch::Model>> _models;
+        // These can stay
+        std::vector<std::shared_ptr<scratch::Renderable>> _renderables;
+        std::vector<std::shared_ptr<scratch::Entity>> _entities;
         std::shared_ptr<scratch::DirectionalLight> _directionalLight;
     };
 
