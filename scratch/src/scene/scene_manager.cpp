@@ -22,6 +22,10 @@ std::shared_ptr<scratch::Renderable>
 scratch::SceneManager::createModelRenderable(const std::string &modelPath,
                                              const std::shared_ptr<Shader> &defaultShader) {
     std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(_idFactory.generateId(), modelPath);
+    for (auto material : newModel->getMaterials()) {
+        material->setId(_idFactory.generateId());
+        _materials.push_back(material);
+    }
     newModel->setDefaultShader(defaultShader);
     _models.push_back(newModel);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
@@ -144,6 +148,13 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    writer.String("materials");
+    writer.StartArray();
+    for (auto &material : _materials) {
+        material->serialize(writer);
+    }
+    writer.EndArray();
+
     writer.String("models");
     writer.StartArray();
     for (auto &model : _models) {
@@ -199,6 +210,14 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     rapidjson::Value &lastGeneratedId = document["lastGeneratedId"];
     _idFactory.setLastGeneratedId(lastGeneratedId.GetUint());
 
+    rapidjson::Value &materialsArray = document["materials"].GetArray();
+    _materials.clear();
+    for (rapidjson::Value::ConstValueIterator itr = materialsArray.Begin(); itr != materialsArray.End(); ++itr) {
+        auto material = std::make_shared<scratch::Material>();
+        material->deserialize(*itr);
+        _materials.push_back(material);
+    }
+
     rapidjson::Value &shadersArray = document["shaders"].GetArray();
     _shaders.clear();
     for (rapidjson::Value::ConstValueIterator itr = shadersArray.Begin(); itr != shadersArray.End(); ++itr) {
@@ -220,6 +239,22 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
             }
         }
         model->setDefaultShader(defaultShader);
+        // TODO: assert equal sizes between materials here
+        auto materials = model->getMaterials();
+        for (int i = 0; i < materials.size(); ++i) {
+            unsigned int materialId = (*itr)["materialIds"].GetArray()[i].GetUint();
+            std::shared_ptr<scratch::Material> targetMaterial;
+            for (auto material : _materials) {
+                if (material->getId() == materialId) {
+                    targetMaterial = material;
+                }
+            }
+            // Override materials
+            materials[i]->setId(targetMaterial->getId());
+            materials[i]->setShader(targetMaterial->getShader());
+//            TODO: reinstate this once Material.deserialize is fixed
+//            materials[i]->setParameters(targetMaterial->getParameters());
+        }
         _models.push_back(model);
     }
 

@@ -4,7 +4,17 @@
 #include <utility>
 #include <vector>
 #include <map>
+
 #include <glad/glad.h>
+
+#ifdef _MSC_VER
+#undef GetObject
+#endif
+
+#include <stb_image.h>
+#include <include/rapidjson/writer.h>
+#include <include/rapidjson/prettywriter.h>
+#include <include/rapidjson/document.h>
 
 #include "converter/string_converter.h"
 #include "shader.h"
@@ -40,20 +50,31 @@ namespace scratch {
     };
 
     class Material {
+    private:
+        unsigned int _id;
+        std::vector<Texture> _textures;
+        std::shared_ptr<scratch::Shader> _shader;
+        std::map<std::string, scratch::Parameter> _parameters;
     public:
-        std::map<std::string, scratch::Parameter> parameters;
 
-        Material(std::vector<Texture> textures) {
-            _id = rand();
+        Material(unsigned int id, std::vector<Texture> textures) {
+            _id = id;
             _textures = std::move(textures);
         }
 
-        Material() = default;
+        Material(std::vector<Texture> textures) {
+            _id = 0;
+            _textures = std::move(textures);
+        }
+
+        Material() {
+            _textures = std::vector<scratch::Texture>();
+        }
 
         void activate() {
             _shader->use();
             setupTextures();
-            setStateParameters();
+            setupStateParameters();
         }
 
         void setShader(std::shared_ptr<scratch::Shader> shader) {
@@ -68,44 +89,51 @@ namespace scratch {
             return _id;
         }
 
+        void setId(unsigned int id) {
+            _id = id;
+        }
+
+        const std::map<std::string, scratch::Parameter> &getParameters() const {
+            return _parameters;
+        }
+
+        void setParameters(const std::map<std::string, scratch::Parameter> &parameters) {
+            _parameters = parameters;
+        }
+
         void setBool(const std::string &name, bool value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::BOOL;
             param.value = scratch::StringConverter::toString(value, false);
-            parameters[name] = param;
+            _parameters[name] = param;
         }
 
         void setInt(const std::string &name, int value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::INT;
             param.value = scratch::StringConverter::toString(value);
-            parameters[name] = param;
+            _parameters[name] = param;
         }
 
         void setFloat(const std::string &name, float value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::FLOAT;
             param.value = scratch::StringConverter::toString(value);
-            parameters[name] = param;
+            _parameters[name] = param;
         }
 
         void setMat4(const std::string &name, glm::mat4 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::MATRIX4;
             param.value = scratch::StringConverter::toString(value);
-            parameters[name] = param;
+            _parameters[name] = param;
         }
-
-        glm::mat4 getMat4(const std::string &name) {
-            return scratch::StringConverter::parsemat4(parameters.find(name)->second.value);
-        }
-
 
         void setVec3(const std::string &name, glm::vec3 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::VECTOR3;
             param.value = scratch::StringConverter::toString(value);
-            parameters[name] = param;
+            _parameters[name] = param;
         }
 
         void setupTextures() {
@@ -136,8 +164,8 @@ namespace scratch {
             }
         }
 
-        void setStateParameters() {
-            for (auto const &[key, val] : parameters) {
+        void setupStateParameters() {
+            for (auto const &[key, val] : _parameters) {
                 switch (val.type) {
                     case BOOL:
                         _shader->setBool(key, scratch::StringConverter::parsebool(val.value));
@@ -164,6 +192,9 @@ namespace scratch {
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
             writer.StartObject();
 
+            writer.String("id");
+            writer.Uint(_id);
+
             writer.String("textures");
             writer.StartArray();
             for (scratch::Texture texture: _textures) {
@@ -179,8 +210,8 @@ namespace scratch {
 
             writer.String("parameters");
             writer.StartObject();
-            // Iterate over the map using c++11 range based for loop
-            for (const std::pair<std::string, scratch::Parameter> &param : parameters) {
+
+            for (const std::pair<std::string, scratch::Parameter> &param : _parameters) {
                 // TODO: remove once this is no longer a material property
                 if (param.first == "model") {
                     continue;
@@ -200,9 +231,76 @@ namespace scratch {
             writer.EndObject();
         }
 
-    private:
-        unsigned int _id;
-        std::vector<Texture> _textures;
-        std::shared_ptr<scratch::Shader> _shader;
+        void deserialize(const rapidjson::Value &object) {
+            _id = object["id"].GetUint();
+
+            auto texturesArray = object["textures"].GetArray();
+            for (rapidjson::Value::ConstValueIterator itr = texturesArray.Begin(); itr != texturesArray.End(); ++itr) {
+                std::string textureType = (*itr)["type"].GetString();
+                std::string texturePath = (*itr)["path"].GetString();
+                this->addTexture(texturePath, textureType);
+            }
+// TODO: work around this
+//            auto parameterMap = object["parameters"].GetObject();
+//            for (auto itr = parameterMap.MemberBegin();
+//                 itr != parameterMap.MemberEnd(); ++itr) {
+//                std::string key = (*itr).name.GetString();
+//                std::string typeString = (*itr).value.GetObject()["type"].GetString();
+//                scratch::Parameter param;
+//                param.type = STRING_TO_PARAM_TYPE.find(typeString)->second;
+//                param.value = (*itr).value.GetObject()["value"].GetString();
+//                _parameters[key] = param;
+//            }
+
+        }
+
+
+        void addTexture(const std::string path, const std::string typeName) {
+            Texture texture;
+            texture.id = textureFromFile(path);
+            texture.type = typeName;
+            texture.path = path;
+            _textures.push_back(texture);
+        }
+
+        // TODO: move to TextureManager/ResourceManager
+        unsigned int textureFromFile(const std::string &path, bool gamma = false) {
+            return textureFromFile(path, gamma, GL_REPEAT);
+        }
+
+        unsigned int textureFromFile(const std::string &path, bool gamma, int wrapMode) {
+            std::string filename = std::string(path);
+
+            unsigned int textureId;
+            glGenTextures(1, &textureId);
+
+            int width, height, nrComponents;
+            unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+            if (data) {
+                GLenum format;
+                if (nrComponents == 1)
+                    format = GL_RED;
+                else if (nrComponents == 3)
+                    format = GL_RGB;
+                else if (nrComponents == 4)
+                    format = GL_RGBA;
+
+                glBindTexture(GL_TEXTURE_2D, textureId);
+                glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                stbi_image_free(data);
+            } else {
+                std::cout << "Texture failed to load at path: " << path << std::endl;
+                stbi_image_free(data);
+            }
+
+            return textureId;
+        }
     };
 } // namespace scratch

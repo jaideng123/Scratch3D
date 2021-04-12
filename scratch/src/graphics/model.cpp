@@ -42,8 +42,7 @@ void scratch::Model::loadModel(const std::string &path) {
     _directory = path.substr(0, path.find_last_of('/'));
 
     for (size_t i = 0; i < scene->mNumMaterials; ++i) {
-        Material material = transformMaterial(scene->mMaterials[i]);
-        _materials.push_back(material);
+        _materials.push_back(transformMaterial(scene->mMaterials[i]));
     }
 
     processNode(scene->mRootNode, scene);
@@ -62,7 +61,8 @@ void scratch::Model::processNode(aiNode *node, const aiScene *scene) {
     }
 }
 
-scratch::Material scratch::Model::transformMaterial(aiMaterial *assimpMaterial) {
+std::shared_ptr<scratch::Material> scratch::Model::transformMaterial(aiMaterial *assimpMaterial) {
+    auto material = std::make_shared<Material>();
     // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
     // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
     // Same applies to other texture as the following list summarizes:
@@ -70,22 +70,27 @@ scratch::Material scratch::Model::transformMaterial(aiMaterial *assimpMaterial) 
     // specular: texture_specularN
     // normal: texture_normalN
     // 1. diffuse maps
-    std::vector<Texture> textures = std::vector<Texture>();
-
-    std::vector<Texture> diffuseMaps = loadMaterialTextures(assimpMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    attachMaterialTextures(material, assimpMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
     // 2. specular maps
-    std::vector<Texture> specularMaps = loadMaterialTextures(assimpMaterial, aiTextureType_SPECULAR,
-                                                             "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    attachMaterialTextures(material, assimpMaterial, aiTextureType_SPECULAR, "texture_specular");
     // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(assimpMaterial, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    attachMaterialTextures(material, assimpMaterial, aiTextureType_HEIGHT, "texture_normal");
     // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(assimpMaterial, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    attachMaterialTextures(material, assimpMaterial, aiTextureType_AMBIENT, "texture_height");
 
-    return Material(textures);
+    return material;
+}
+
+void scratch::Model::attachMaterialTextures(const std::shared_ptr<scratch::Material> material,
+                                            const aiMaterial *assimpMaterial,
+                                            const aiTextureType &type,
+                                            const std::string &typeName) {
+    for (unsigned int i = 0; i < assimpMaterial->GetTextureCount(type); i++) {
+        aiString str;
+        assimpMaterial->GetTexture(aiTextureType_DIFFUSE, i, &str);
+        std::string texturePath = std::string(str.C_Str()) + "/" + _directory;
+        material->addTexture(texturePath, typeName);
+    }
 }
 
 scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
@@ -128,22 +133,7 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, &_materials[mesh->mMaterialIndex]);
-}
-
-std::vector<scratch::Texture> scratch::Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-                                                                   const std::string &typeName) {
-    std::vector<Texture> textures;
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        Texture texture;
-        texture.id = textureFromFile(str.C_Str(), _directory);
-        texture.type = typeName;
-        texture.path = _directory + "/" + str.C_Str();
-        textures.push_back(texture);
-    }
-    return textures;
+    return Mesh(vertices, indices, _materials[mesh->mMaterialIndex]);
 }
 
 const std::string &scratch::Model::getModelPath() const {
@@ -159,10 +149,10 @@ void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> 
     writer.String("modelPath");
     writer.String(_modelPath.c_str(), static_cast<rapidjson::SizeType>(_modelPath.length()));
 
-    writer.String("materials");
+    writer.String("materialIds");
     writer.StartArray();
-    for (auto &material : _materials) {
-        material.serialize(writer);
+    for (auto material : _materials) {
+        writer.Uint(material->getId());
     }
     writer.EndArray();
 
@@ -176,7 +166,6 @@ void scratch::Model::deserialize(const rapidjson::Value &object) {
     _id = object["id"].GetUint();
     _modelPath = object["modelPath"].GetString();
     this->loadModel(_modelPath);
-    //TODO handle materials
 }
 
 scratch::Model::Model() {
@@ -197,50 +186,14 @@ unsigned int scratch::Model::getId() const {
     return _id;
 }
 
+const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const {
+    return _materials;
+}
+
 glm::vec3 convertVector3(aiVector3D aiVec3) {
     auto newVec3 = glm::vec3(0);
     newVec3.x = aiVec3.x;
     newVec3.y = aiVec3.y;
     newVec3.z = aiVec3.z;
     return newVec3;
-}
-
-unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma) {
-    return textureFromFile(path, directory, gamma, GL_REPEAT);
-}
-
-unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma, int wrapMode) {
-    std::string filename = std::string(path);
-    filename = directory + '/' + filename;
-
-    unsigned int textureId;
-    glGenTextures(1, &textureId);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    } else {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureId;
 }

@@ -17,7 +17,7 @@
 namespace scratch {
     class Model {
     public:
-        Model(unsigned int id, const std::string& path);
+        Model(unsigned int id, const std::string &path);
 
         Model();
 
@@ -35,26 +35,30 @@ namespace scratch {
 
         void setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader);
 
+        const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const;
+
     private:
         unsigned int _id;
 
         /*  Model Data  */
         std::vector<Mesh> _meshes;
-        std::vector<Material> _materials;
+        std::vector<std::shared_ptr<Material>> _materials;
         std::string _directory;
         std::string _modelPath;
         std::shared_ptr<scratch::Shader> _defaultShader;
 
         /*  Functions   */
-        void loadModel(const std::string& path);
+        void loadModel(const std::string &path);
 
         void processNode(aiNode *node, const aiScene *scene);
 
-        Material transformMaterial(aiMaterial *assimpMaterial);
+        std::shared_ptr<scratch::Material> scratch::Model::transformMaterial(aiMaterial *assimpMaterial);
 
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 
-        std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-                                                  const std::string &typeName);
+        void scratch::Model::attachMaterialTextures(const std::shared_ptr<scratch::Material> material,
+                                                    const aiMaterial *assimpMaterial,
+                                                    const aiTextureType &type,
+                                                    const std::string &typeName);
     };
 } // namespace scratch

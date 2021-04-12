@@ -42,6 +42,7 @@ namespace scratch {
         scratch::IdFactory _idFactory;
         scratch::SceneNode _rootNode;
         // TODO: move to ResourceManager
+        std::vector<std::shared_ptr<scratch::Material>> _materials;
         std::vector<std::shared_ptr<scratch::Shader>> _shaders;
         std::vector<std::shared_ptr<scratch::Model>> _models;
         // These can stay

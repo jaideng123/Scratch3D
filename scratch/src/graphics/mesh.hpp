@@ -35,7 +35,7 @@ namespace scratch {
 
         /*  Functions  */
         // constructor
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, scratch::Material *material) {
+        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::shared_ptr<Material> material) {
             this->_vertices = std::move(vertices);
             this->_indices = std::move(indices);
             this->_material = material;
@@ -52,7 +52,7 @@ namespace scratch {
             glBindVertexArray(0);
         }
 
-        Material *getMaterial() const {
+        std::shared_ptr<Material> getMaterial() const {
             return _material;
         }
 
@@ -60,7 +60,7 @@ namespace scratch {
         /*  Mesh Data  */
         std::vector<Vertex> _vertices;
         std::vector<unsigned int> _indices;
-        scratch::Material *_material;
+        std::shared_ptr<Material> _material;
         unsigned int _vao;
 
         /*  Render data  */
