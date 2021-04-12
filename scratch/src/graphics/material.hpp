@@ -68,6 +68,7 @@ namespace scratch {
         }
 
         Material() {
+            _id = 0;
             _textures = std::vector<scratch::Texture>();
         }
 
@@ -195,6 +196,9 @@ namespace scratch {
             writer.String("id");
             writer.Uint(_id);
 
+            writer.String("shaderId");
+            writer.Uint(_shader->getId());
+
             writer.String("textures");
             writer.StartArray();
             for (scratch::Texture texture: _textures) {
@@ -209,24 +213,30 @@ namespace scratch {
 
 
             writer.String("parameters");
-            writer.StartObject();
+            writer.StartArray();
 
             for (const std::pair<std::string, scratch::Parameter> &param : _parameters) {
                 // TODO: remove once this is no longer a material property
                 if (param.first == "model") {
                     continue;
                 }
-                writer.String(param.first.c_str(), static_cast<rapidjson::SizeType>(param.first.length()));
                 writer.StartObject();
+
+                writer.String("key");
+                writer.String(param.first.c_str(), static_cast<rapidjson::SizeType>(param.first.length()));
+
                 writer.String("type");
                 std::string type = PARAM_TYPE_TO_STRING.find(param.second.type)->second;
                 writer.String(type.c_str(), static_cast<rapidjson::SizeType>(type.length()));
+
                 writer.String("value");
                 writer.String(param.second.value.c_str(),
                               static_cast<rapidjson::SizeType>(param.second.value.length()));
+
                 writer.EndObject();
             }
-            writer.EndObject();
+
+            writer.EndArray();
 
             writer.EndObject();
         }
@@ -240,17 +250,17 @@ namespace scratch {
                 std::string texturePath = (*itr)["path"].GetString();
                 this->addTexture(texturePath, textureType);
             }
-// TODO: work around this
-//            auto parameterMap = object["parameters"].GetObject();
-//            for (auto itr = parameterMap.MemberBegin();
-//                 itr != parameterMap.MemberEnd(); ++itr) {
-//                std::string key = (*itr).name.GetString();
-//                std::string typeString = (*itr).value.GetObject()["type"].GetString();
-//                scratch::Parameter param;
-//                param.type = STRING_TO_PARAM_TYPE.find(typeString)->second;
-//                param.value = (*itr).value.GetObject()["value"].GetString();
-//                _parameters[key] = param;
-//            }
+
+            auto parametersArray = object["parameters"].GetArray();
+            for (auto itr = parametersArray.Begin();
+                 itr != parametersArray.End(); ++itr) {
+                std::string key = (*itr)["key"].GetString();
+                std::string typeString = (*itr)["type"].GetString();
+                scratch::Parameter param;
+                param.type = STRING_TO_PARAM_TYPE.find(typeString)->second;
+                param.value = (*itr)["value"].GetString();
+                _parameters[key] = param;
+            }
 
         }
 

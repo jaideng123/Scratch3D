@@ -138,9 +138,11 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
 
     writer.StartObject();
 
+    std::cout << "Serializing Id Factory" << std::endl;
     writer.String("lastGeneratedId");
     writer.Uint(_idFactory.getLastGeneratedId());
 
+    std::cout << "Serializing Shaders" << std::endl;
     writer.String("shaders");
     writer.StartArray();
     for (auto &shader : _shaders) {
@@ -148,6 +150,7 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    std::cout << "Serializing Materials" << std::endl;
     writer.String("materials");
     writer.StartArray();
     for (auto &material : _materials) {
@@ -155,6 +158,7 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    std::cout << "Serializing Models" << std::endl;
     writer.String("models");
     writer.StartArray();
     for (auto &model : _models) {
@@ -162,6 +166,7 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    std::cout << "Serializing Renderables" << std::endl;
     writer.String("renderables");
     writer.StartArray();
     for (auto &renderable : _renderables) {
@@ -169,6 +174,7 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    std::cout << "Serializing Entities" << std::endl;
     writer.String("entities");
     writer.StartArray();
     for (auto &entity : _entities) {
@@ -176,9 +182,11 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
+    std::cout << "Serializing Lights" << std::endl;
     writer.String("directionalLight");
     _directionalLight->serialize(writer);
 
+    std::cout << "Serializing Scene Graph" << std::endl;
     writer.String("rootNode");
     _rootNode.serialize(writer);
 
@@ -207,17 +215,11 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     rapidjson::Document document;
     document.Parse(content.c_str());
 
+    std::cout << "Deserializing Id Factory State" << std::endl;
     rapidjson::Value &lastGeneratedId = document["lastGeneratedId"];
     _idFactory.setLastGeneratedId(lastGeneratedId.GetUint());
 
-    rapidjson::Value &materialsArray = document["materials"].GetArray();
-    _materials.clear();
-    for (rapidjson::Value::ConstValueIterator itr = materialsArray.Begin(); itr != materialsArray.End(); ++itr) {
-        auto material = std::make_shared<scratch::Material>();
-        material->deserialize(*itr);
-        _materials.push_back(material);
-    }
-
+    std::cout << "Deserializing Shaders" << std::endl;
     rapidjson::Value &shadersArray = document["shaders"].GetArray();
     _shaders.clear();
     for (rapidjson::Value::ConstValueIterator itr = shadersArray.Begin(); itr != shadersArray.End(); ++itr) {
@@ -226,38 +228,45 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         _shaders.push_back(shader);
     }
 
+    std::cout << "Deserializing Materials" << std::endl;
+    rapidjson::Value &materialsArray = document["materials"].GetArray();
+    _materials.clear();
+    for (rapidjson::Value::ConstValueIterator itr = materialsArray.Begin(); itr != materialsArray.End(); ++itr) {
+        auto material = std::make_shared<scratch::Material>();
+        material->deserialize(*itr);
+        unsigned int targetShaderId = (*itr)["shaderId"].GetUint();
+        std::shared_ptr<scratch::Shader> targetShader;
+        for (auto shader: _shaders) {
+            if(shader->getId() == targetShaderId){
+                targetShader = shader;
+            }
+        }
+        material->setShader(targetShader);
+        _materials.push_back(material);
+    }
+
+    std::cout << "Deserializing Models" << std::endl;
     rapidjson::Value &modelsArray = document["models"].GetArray();
     _models.clear();
     for (rapidjson::Value::ConstValueIterator itr = modelsArray.Begin(); itr != modelsArray.End(); ++itr) {
         std::shared_ptr<scratch::Model> model = std::make_shared<scratch::Model>();
         model->deserialize(*itr);
-        unsigned int defaultShaderId = (*itr)["defaultShaderId"].GetUint();
-        std::shared_ptr<scratch::Shader> defaultShader;
-        for (auto &shader : _shaders) {
-            if (shader->getId() == defaultShaderId) {
-                defaultShader = shader;
-            }
-        }
-        model->setDefaultShader(defaultShader);
-        // TODO: assert equal sizes between materials here
+
         auto materials = model->getMaterials();
         for (int i = 0; i < materials.size(); ++i) {
             unsigned int materialId = (*itr)["materialIds"].GetArray()[i].GetUint();
             std::shared_ptr<scratch::Material> targetMaterial;
-            for (auto material : _materials) {
+            for (const auto& material : _materials) {
                 if (material->getId() == materialId) {
                     targetMaterial = material;
                 }
             }
-            // Override materials
-            materials[i]->setId(targetMaterial->getId());
-            materials[i]->setShader(targetMaterial->getShader());
-//            TODO: reinstate this once Material.deserialize is fixed
-//            materials[i]->setParameters(targetMaterial->getParameters());
+            model->swapMaterial(i, targetMaterial);
         }
         _models.push_back(model);
     }
 
+    std::cout << "Deserializing Renderables" << std::endl;
     rapidjson::Value &renderablesArray = document["renderables"].GetArray();
     _renderables.clear();
     for (rapidjson::Value::ConstValueIterator itr = renderablesArray.Begin(); itr != renderablesArray.End(); ++itr) {
@@ -278,6 +287,7 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         _renderables.push_back(newRenderable);
     }
 
+    std::cout << "Deserializing Entities" << std::endl;
     rapidjson::Value &entitiesArray = document["entities"].GetArray();
     _entities.clear();
     for (rapidjson::Value::ConstValueIterator itr = entitiesArray.Begin(); itr != entitiesArray.End(); ++itr) {
@@ -293,9 +303,12 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         _entities.push_back(newEntity);
     }
 
+    std::cout << "Deserializing Scene Graph" << std::endl;
+    _rootNode.deserialize(document["rootNode"], _entities);
+
+    std::cout << "Deserializing Lights" << std::endl;
     _directionalLight = std::make_shared<scratch::DirectionalLight>();
     _directionalLight->deserialize(document["directionalLight"]);
 
-    _rootNode.deserialize(document["rootNode"], _entities);
     std::cout << "Finished Loading Scene" << std::endl;
 }

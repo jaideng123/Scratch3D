@@ -35,10 +35,14 @@ namespace scratch {
 
         /*  Functions  */
         // constructor
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::shared_ptr<Material> material) {
+        Mesh(std::vector<Vertex> vertices,
+             std::vector<unsigned int> indices,
+             std::shared_ptr<Material> material,
+             const unsigned int materialIndex) {
             this->_vertices = std::move(vertices);
             this->_indices = std::move(indices);
             this->_material = material;
+            this->_materialIndex = materialIndex;
 
             // now that we have all the required data, set the vertex buffers and its attribute pointers.
             setupMesh();
@@ -52,8 +56,16 @@ namespace scratch {
             glBindVertexArray(0);
         }
 
+        void setMaterial(const std::shared_ptr<Material> &material) {
+            _material = material;
+        }
+
         std::shared_ptr<Material> getMaterial() const {
             return _material;
+        }
+
+        unsigned int getMaterialIndex() const {
+            return _materialIndex;
         }
 
     private:
@@ -61,6 +73,7 @@ namespace scratch {
         std::vector<Vertex> _vertices;
         std::vector<unsigned int> _indices;
         std::shared_ptr<Material> _material;
+        unsigned int _materialIndex;
         unsigned int _vao;
 
         /*  Render data  */

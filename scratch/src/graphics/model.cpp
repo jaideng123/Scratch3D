@@ -87,8 +87,8 @@ void scratch::Model::attachMaterialTextures(const std::shared_ptr<scratch::Mater
                                             const std::string &typeName) {
     for (unsigned int i = 0; i < assimpMaterial->GetTextureCount(type); i++) {
         aiString str;
-        assimpMaterial->GetTexture(aiTextureType_DIFFUSE, i, &str);
-        std::string texturePath = std::string(str.C_Str()) + "/" + _directory;
+        assimpMaterial->GetTexture(type, i, &str);
+        std::string texturePath = _directory + "/" + str.C_Str();
         material->addTexture(texturePath, typeName);
     }
 }
@@ -133,7 +133,7 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, _materials[mesh->mMaterialIndex]);
+    return Mesh(vertices, indices, _materials[mesh->mMaterialIndex], mesh->mMaterialIndex);
 }
 
 const std::string &scratch::Model::getModelPath() const {
@@ -156,9 +156,6 @@ void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> 
     }
     writer.EndArray();
 
-    writer.String("defaultShaderId");
-    writer.Uint(_defaultShader->getId());
-
     writer.EndObject();
 }
 
@@ -171,14 +168,9 @@ void scratch::Model::deserialize(const rapidjson::Value &object) {
 scratch::Model::Model() {
 }
 
-const std::shared_ptr<scratch::Shader> &scratch::Model::getDefaultShader() const {
-    return _defaultShader;
-}
-
 void scratch::Model::setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader) {
-    Model::_defaultShader = defaultShader;
-    for (auto &mesh : _meshes) {
-        mesh.getMaterial()->setShader(defaultShader);
+    for (auto &material : _materials) {
+        material->setShader(defaultShader);
     }
 }
 
@@ -188,6 +180,15 @@ unsigned int scratch::Model::getId() const {
 
 const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const {
     return _materials;
+}
+
+void scratch::Model::swapMaterial(const unsigned int index, const std::shared_ptr<scratch::Material> newMaterial) {
+    for (auto &mesh : _meshes) {
+        if (mesh.getMaterialIndex() == index) {
+            mesh.setMaterial(newMaterial);
+        }
+    }
+    _materials[index] = newMaterial;
 }
 
 glm::vec3 convertVector3(aiVector3D aiVec3) {

@@ -31,11 +31,11 @@ namespace scratch {
 
         void deserialize(const rapidjson::Value &object);
 
-        const std::shared_ptr<scratch::Shader> &getDefaultShader() const;
-
         void setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader);
 
         const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const;
+
+        void swapMaterial(const unsigned int index, const std::shared_ptr<scratch::Material> newMaterial);
 
     private:
         unsigned int _id;
@@ -45,7 +45,6 @@ namespace scratch {
         std::vector<std::shared_ptr<Material>> _materials;
         std::string _directory;
         std::string _modelPath;
-        std::shared_ptr<scratch::Shader> _defaultShader;
 
         /*  Functions   */
         void loadModel(const std::string &path);
