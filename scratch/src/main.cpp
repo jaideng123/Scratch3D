@@ -83,6 +83,8 @@ int main() {
     scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
 
     std::cout << "starting rendering loop" << std::endl;
+
+
     // Rendering Loop
     while (glfwWindowShouldClose(scratch::MainWindow) == false) {
         glfwPollEvents();

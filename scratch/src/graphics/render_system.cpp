@@ -11,6 +11,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <ImGuizmo.h>
+#include <utilities/assert.h>
 #include "main.h"
 
 
@@ -36,11 +37,7 @@ void RenderSystem::setup() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     scratch::MainWindow = glfwCreateWindow(scratch::DEFAULT_WIDTH, scratch::DEFAULT_HEIGHT, "Scratch", nullptr, nullptr);
-
-    // Check for Valid Context
-    if (scratch::MainWindow == nullptr) {
-        throw std::runtime_error("Failed to Create OpenGL Context");
-    }
+    SCRATCH_ASSERT(scratch::MainWindow != nullptr);
 
     // Create Context and Load OpenGL Functions
     glfwMakeContextCurrent(scratch::MainWindow);
