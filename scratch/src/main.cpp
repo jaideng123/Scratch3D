@@ -9,6 +9,7 @@
 #include <iostream>
 #include <optional>
 #include <gui/transform_gizmo.h>
+#include <gui/scene_heirarchy.h>
 #include <gui/main_menu_bar.h>
 
 // Local Headers
@@ -43,14 +44,19 @@ int main() {
 
 
     std::cout << "Loading Shaders..." << std::endl;
-    auto unlitShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/unlit.vert", "./assets/shaders/unlit.frag");
-    auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert", "./assets/shaders/lit.frag");
-    auto selectionShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/entity-selection.vert",
-                                                     "./assets/shaders/entity-selection.frag");
+    auto unlitShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/unlit.vert",
+                                                                            "./assets/shaders/unlit.frag");
+    auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert",
+                                                                          "./assets/shaders/lit.frag");
+    auto selectionShader = scratch::ScratchManagers->sceneManager->createShader(
+            "./assets/shaders/entity-selection.vert",
+            "./assets/shaders/entity-selection.frag");
 
     std::cout << "Loading Models..." << std::endl;
-    auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable("./assets/models/nanosuit/nanosuit.obj", litShader);
-    auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable("./assets/models/stone-man/Stone.obj", litShader);
+    auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+            "./assets/models/nanosuit/nanosuit.obj", litShader);
+    auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+            "./assets/models/stone-man/Stone.obj", litShader);
 
     std::cout << "Creating Entities..." << std::endl;
     auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
@@ -80,6 +86,8 @@ int main() {
 
     auto transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
 
+    auto sceneHeirarchyGizmo = scratch::SceneHeirarchy();
+
     scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
 
     std::cout << "starting rendering loop" << std::endl;
@@ -93,16 +101,20 @@ int main() {
         handleInput();
 
         RenderSystem::startFrame();
-        auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(selectedSceneNodeId);
+        auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(
+                selectedSceneNodeId);
         if (selectedNode != nullptr) {
             glm::mat4 matrix = selectedNode->generateTransformMatrix();
             transformGizmo.setCurrentTransform(matrix);
             transformGizmo.render();
             selectedNode->setTransform(transformGizmo.getCurrentTransform());
         }
+        sceneHeirarchyGizmo.render();
+
 
         if (checkSelection) {
-            selectedSceneNodeId = scratch::ScratchManagers->sceneManager->handleSelection(*selectionShader, glm::vec2(lastX, lastY));
+            selectedSceneNodeId = scratch::ScratchManagers->sceneManager->handleSelection(*selectionShader,
+                                                                                          glm::vec2(lastX, lastY));
             checkSelection = false;
         }
 

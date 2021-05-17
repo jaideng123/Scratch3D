@@ -36,7 +36,8 @@ void RenderSystem::setup() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    scratch::MainWindow = glfwCreateWindow(scratch::DEFAULT_WIDTH, scratch::DEFAULT_HEIGHT, "Scratch", nullptr, nullptr);
+    scratch::MainWindow = glfwCreateWindow(scratch::DEFAULT_WIDTH, scratch::DEFAULT_HEIGHT, "Scratch", nullptr,
+                                           nullptr);
     SCRATCH_ASSERT(scratch::MainWindow != nullptr);
 
     // Create Context and Load OpenGL Functions
@@ -105,8 +106,8 @@ void RenderSystem::startFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-//        bool showDemoWindow = true;
-//        ImGui::ShowDemoWindow(&showDemoWindow);
+//    bool showDemoWindow = false;
+//    ImGui::ShowDemoWindow(&showDemoWindow);
     ImGuizmo::BeginFrame();
 }
 

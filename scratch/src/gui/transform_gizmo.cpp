@@ -10,7 +10,8 @@
 #include "transform_gizmo.h"
 
 void scratch::TransformGizmo::render() {
-    ImGui::SetNextWindowPos(ImVec2(0, Y_OFFSET));
+    ImGui::SetNextWindowPos(ImVec2(0, Y_OFFSET), ImGuiCond_Once);
+
     ImGui::Begin("Transform Edit");
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
