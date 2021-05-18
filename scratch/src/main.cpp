@@ -25,6 +25,8 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 void handleInput();
 
+void loadDefaultScene();
+
 double lastX = 400, lastY = 300;
 bool firstMouse = true;
 
@@ -42,51 +44,16 @@ int main() {
     glfwSetKeyCallback(scratch::MainWindow, keyCallback);
     glfwSetMouseButtonCallback(scratch::MainWindow, mouseButtonCallback);
 
-
-    std::cout << "Loading Shaders..." << std::endl;
-    auto unlitShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/unlit.vert",
-                                                                            "./assets/shaders/unlit.frag");
-    auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert",
-                                                                          "./assets/shaders/lit.frag");
     auto selectionShader = scratch::ScratchManagers->sceneManager->createShader(
             "./assets/shaders/entity-selection.vert",
             "./assets/shaders/entity-selection.frag");
-
-    std::cout << "Loading Models..." << std::endl;
-    auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-            "./assets/models/nanosuit/nanosuit.obj", litShader);
-    auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-            "./assets/models/stone-man/Stone.obj", litShader);
-
-    std::cout << "Creating Entities..." << std::endl;
-    auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
-    auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
-
-    std::cout << "Creating Scene Nodes..." << std::endl;
-    auto nanosuitNode = scratch::ScratchManagers->sceneManager->createSceneNode(nanosuitEntity);
-    nanosuitNode->setPosition(glm::vec3(-2, 0, 0));
-    nanosuitNode->setScale(glm::vec3(0.2f));
-    scratch::ScratchManagers->sceneManager->getRootNode().addChild(nanosuitNode);
-
-    auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
-    stoneManNode->setScale(glm::vec3(0.2f));
-    scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
-
-
     selectedSceneNodeId = 0;
-
-    auto directionalLight = scratch::ScratchManagers->sceneManager->createDirectionalLight();
-    directionalLight->setDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
-    directionalLight->setAmbient(scratch::Color(glm::vec3(0.2f)));
-    directionalLight->setDiffuse(scratch::Color(glm::vec3(0.5f)));
-    directionalLight->setSpecular(scratch::WHITE);
-
 
     scratch::MainCamera = new scratch::Camera();
 
     auto transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
 
-    auto sceneHeirarchyGizmo = scratch::SceneHeirarchy();
+    auto sceneHeirarchyGizmo = scratch::SceneHeirarchy(scratch::ScratchManagers->sceneManager->getRootNode());
 
     scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
 
@@ -109,8 +76,13 @@ int main() {
             transformGizmo.render();
             selectedNode->setTransform(transformGizmo.getCurrentTransform());
         }
-        sceneHeirarchyGizmo.render();
 
+        sceneHeirarchyGizmo.setRootNode(scratch::ScratchManagers->sceneManager->getRootNode());
+        sceneHeirarchyGizmo.setSelectedNode(selectedNode);
+        sceneHeirarchyGizmo.render();
+        if (sceneHeirarchyGizmo.getSelectedNode() != nullptr) {
+            selectedSceneNodeId = sceneHeirarchyGizmo.getSelectedNode()->getId();
+        }
 
         if (checkSelection) {
             selectedSceneNodeId = scratch::ScratchManagers->sceneManager->handleSelection(*selectionShader,
@@ -170,20 +142,6 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     if (ImGui::GetIO().WantCaptureKeyboard) {
         return;
     }
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        for (auto &shader : scratch::ScratchManagers->sceneManager->getShaders()) {
-            shader->reload();
-        }
-    }
-
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        scratch::ScratchManagers->sceneManager->saveScene("./scene.json");
-    }
-    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-        selectedSceneNodeId = 0;
-        scratch::ScratchManagers->sceneManager->loadScene("./scene.json");
-
-    }
 }
 
 void handleInput() {
@@ -212,4 +170,38 @@ void handleInput() {
     } else {
         glfwSetInputMode(scratch::MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
+}
+
+void loadDefaultScene() {
+    std::cout << "Loading Shaders..." << std::endl;
+    auto unlitShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/unlit.vert",
+                                                                            "./assets/shaders/unlit.frag");
+    auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert",
+                                                                          "./assets/shaders/lit.frag");
+
+    std::cout << "Loading Models..." << std::endl;
+    auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+            "./assets/models/nanosuit/nanosuit.obj", litShader);
+    auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+            "./assets/models/stone-man/Stone.obj", litShader);
+
+    std::cout << "Creating Entities..." << std::endl;
+    auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
+    auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
+
+    std::cout << "Creating Scene Nodes..." << std::endl;
+    auto nanosuitNode = scratch::ScratchManagers->sceneManager->createSceneNode(nanosuitEntity);
+    nanosuitNode->setPosition(glm::vec3(-2, 0, 0));
+    nanosuitNode->setScale(glm::vec3(0.2f));
+    scratch::ScratchManagers->sceneManager->getRootNode().addChild(nanosuitNode);
+
+    auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
+    stoneManNode->setScale(glm::vec3(0.2f));
+    scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
+
+    auto directionalLight = scratch::ScratchManagers->sceneManager->createDirectionalLight();
+    directionalLight->setDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
+    directionalLight->setAmbient(scratch::Color(glm::vec3(0.2f)));
+    directionalLight->setDiffuse(scratch::Color(glm::vec3(0.5f)));
+    directionalLight->setSpecular(scratch::WHITE);
 }

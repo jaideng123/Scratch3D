@@ -48,6 +48,10 @@ namespace scratch {
 
         void setId(unsigned int id);
 
+        const std::string &getName() const;
+
+        void setName(const std::string &name);
+
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer);
 
         void
@@ -61,6 +65,7 @@ namespace scratch {
         std::weak_ptr<SceneNode> _parent;
         std::vector<std::shared_ptr<SceneNode>> _children;
         std::shared_ptr<scratch::Entity> _entity;
+        std::string _name;
         unsigned int _id;
     };
 

@@ -79,6 +79,7 @@ scratch::SceneNode::SceneNode() {
     _position = glm::vec3(0);
     _rotation = glm::quat();
     _scale = glm::vec3(1.0f);
+    _name = "New Object";
     _children = std::vector<std::shared_ptr<scratch::SceneNode>>();
 }
 
@@ -91,6 +92,9 @@ void scratch::SceneNode::serialize(rapidjson::PrettyWriter<rapidjson::StringBuff
 
     writer.String("id");
     writer.Uint(_id);
+
+    writer.String("name");
+    writer.String(_name.c_str(), static_cast<rapidjson::SizeType>(_name.length()));
 
     writer.String("entityId");
     if (_entity != nullptr) {
@@ -126,6 +130,8 @@ void scratch::SceneNode::deserialize(const rapidjson::Value &object,
                                      const std::vector<std::shared_ptr<scratch::Entity>> &entities) {
     _id = object["id"].GetUint();
 
+    _name = object["name"].GetString();
+
     _entity = nullptr;
     if (!object["entityId"].IsNull()) {
         unsigned int entityId = object["entityId"].GetUint();
@@ -152,5 +158,13 @@ void scratch::SceneNode::deserialize(const rapidjson::Value &object,
         _children.push_back(child);
     }
 
+}
+
+const std::string &scratch::SceneNode::getName() const {
+    return _name;
+}
+
+void scratch::SceneNode::setName(const std::string &name) {
+    _name = name;
 }
 
