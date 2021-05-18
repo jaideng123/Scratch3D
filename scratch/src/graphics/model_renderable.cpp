@@ -38,3 +38,7 @@ scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scrat
 
 scratch::ModelRenderable::ModelRenderable() {}
 
+const std::vector<std::shared_ptr<scratch::Material>> &scratch::ModelRenderable::getMaterials() const {
+    return _model->getMaterials();
+}
+

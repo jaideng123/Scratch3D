@@ -11,6 +11,8 @@
 #include <gui/transform_gizmo.h>
 #include <gui/scene_heirarchy.h>
 #include <gui/main_menu_bar.h>
+#include <backends/imgui_impl_glfw.h>
+#include <gui/material_props_widget.h>
 
 // Local Headers
 #include "time/scratch_time.h"
@@ -55,6 +57,8 @@ int main() {
 
     auto sceneHeirarchyGizmo = scratch::SceneHeirarchy(scratch::ScratchManagers->sceneManager->getRootNode());
 
+    auto materialPropsWidget = scratch::MaterialPropsWidget();
+
     scratch::MainMenuBar mainMenuBar = scratch::MainMenuBar();
 
     std::cout << "starting rendering loop" << std::endl;
@@ -71,10 +75,20 @@ int main() {
         auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(
                 selectedSceneNodeId);
         if (selectedNode != nullptr) {
-            glm::mat4 matrix = selectedNode->generateTransformMatrix();
-            transformGizmo.setCurrentTransform(matrix);
-            transformGizmo.render();
-            selectedNode->setTransform(transformGizmo.getCurrentTransform());
+            ImGui::SetNextWindowPos(ImVec2(0, 250.0f), ImGuiCond_Once);
+            ImGui::Begin("Selected Scene Node");
+            if (ImGui::CollapsingHeader("Transform Edit", ImGuiTreeNodeFlags_DefaultOpen)) {
+                glm::mat4 matrix = selectedNode->generateTransformMatrix();
+                transformGizmo.setCurrentTransform(matrix);
+                transformGizmo.render();
+                selectedNode->setTransform(transformGizmo.getCurrentTransform());
+            }
+            if (ImGui::CollapsingHeader("Material Props", ImGuiTreeNodeFlags_DefaultOpen)) {
+                materialPropsWidget.setMaterials(selectedNode->getEntity()->getRenderable()->getMaterials());
+                materialPropsWidget.render();
+            }
+
+            ImGui::End();
         }
 
         sceneHeirarchyGizmo.setRootNode(scratch::ScratchManagers->sceneManager->getRootNode());
@@ -140,6 +154,7 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (ImGui::GetIO().WantCaptureKeyboard) {
+        ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
         return;
     }
 }

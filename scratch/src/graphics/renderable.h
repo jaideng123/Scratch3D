@@ -16,6 +16,8 @@ namespace scratch {
 
         virtual std::string getType() = 0;
 
+        virtual const std::vector<std::shared_ptr<scratch::Material>> &getMaterials() const = 0;
+
         virtual void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) = 0;
 
         unsigned int getId() const;

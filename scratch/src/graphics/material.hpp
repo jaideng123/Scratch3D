@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <iostream>
 
 #include <glad/glad.h>
 
@@ -215,7 +216,7 @@ namespace scratch {
             writer.String("parameters");
             writer.StartArray();
 
-            for (const std::pair<std::string, scratch::Parameter> &param : _parameters) {
+            for (auto &param : _parameters) {
                 // TODO: remove once this is no longer a material property
                 if (param.first == "model") {
                     continue;

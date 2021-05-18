@@ -20,6 +20,9 @@ namespace scratch {
 
         std::string getType() override;
 
+        virtual const std::vector<std::shared_ptr<scratch::Material>> &getMaterials() const override;
+
+
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) override;
 
     private:

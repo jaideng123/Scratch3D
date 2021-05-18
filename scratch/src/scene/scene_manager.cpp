@@ -68,7 +68,6 @@ void scratch::SceneManager::render(const scratch::Camera &camera) {
             // TODO: get rid of these
             // also remove code from serialization in material
             mesh.getMaterial()->setMat4("model", modelMatrix);
-            mesh.getMaterial()->setFloat("material.shininess", 32.0f);
             renderQueue.push_back(mesh);
         }
     }
