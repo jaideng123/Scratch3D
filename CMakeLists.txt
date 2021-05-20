@@ -43,6 +43,8 @@ include_directories(
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
         scratch/vendor/imgui/*.h
         scratch/vendor/imgui/*.cpp
+        scratch/vendor/imgui/misc/cpp/*.h
+        scratch/vendor/imgui/misc/cpp/*.cpp
         scratch/vendor/imgui/backends/imgui_impl_glfw.*
         scratch/vendor/imgui/backends/imgui_impl_opengl3.*
         scratch/vendor/ImGuizmo/*.h

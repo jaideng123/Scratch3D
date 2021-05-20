@@ -43,8 +43,6 @@ void scratch::TransformGizmo::render() {
             mCurrentGizmoMode = ImGuizmo::WORLD;
     }
     static bool useSnap(false);
-    if (ImGui::IsKeyPressed(83))
-        useSnap = !useSnap;
     ImGui::Checkbox("", &useSnap);
     ImGui::SameLine();
     glm::vec3 snap = {1.0f, 1.0f, 1.0f};

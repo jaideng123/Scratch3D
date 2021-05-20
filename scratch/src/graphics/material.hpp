@@ -138,6 +138,16 @@ namespace scratch {
             _parameters[name] = param;
         }
 
+        void removeParameter(const std::string &name) {
+            _parameters.erase(name);
+        }
+
+        void renameParameter(const std::string &oldName, const std::string &newName) {
+            auto nodeHandler = _parameters.extract(oldName);
+            nodeHandler.key() = newName;
+            _parameters.insert(std::move(nodeHandler));
+        }
+
         void setupTextures() {
             // bind appropriate textures
             unsigned int diffuseNr = 1;
