@@ -49,6 +49,8 @@ int main() {
     auto selectionShader = scratch::ScratchManagers->sceneManager->createShader(
             "./assets/shaders/entity-selection.vert",
             "./assets/shaders/entity-selection.frag");
+
+//    loadDefaultScene();
     selectedSceneNodeId = 0;
 
     scratch::MainCamera = new scratch::Camera();

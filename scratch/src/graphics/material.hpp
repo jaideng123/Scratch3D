@@ -16,6 +16,7 @@
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
 #include <include/rapidjson/document.h>
+#include <utilities/assert.h>
 
 #include "converter/string_converter.h"
 #include "shader.h"
@@ -195,7 +196,32 @@ namespace scratch {
                         _shader->setMat4(key, scratch::StringConverter::parsemat4(val.value));
                         break;
                     default:
-                        throw std::runtime_error("UNKNOWN DATA TYPE");
+                        SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                        break;
+                }
+            }
+        }
+
+        void clearParameters() {
+            for (auto const &[key, val] : _parameters) {
+                switch (val.type) {
+                    case BOOL:
+                        _shader->setBool(key, false);
+                        break;
+                    case INT:
+                        _shader->setInt(key, 0);
+                        break;
+                    case FLOAT:
+                        _shader->setFloat(key, 0);
+                        break;
+                    case VECTOR3:
+                        _shader->setVec3(key, glm::vec3(0));
+                        break;
+                    case MATRIX4:
+                        _shader->setMat4(key, glm::mat4(1));
+                        break;
+                    default:
+                        SCRATCH_ASSERT_NEVER("Unknown Param Type");
                         break;
                 }
             }

@@ -14,8 +14,8 @@ glm::mat4 scratch::SceneNode::generateTransformMatrix() {
 }
 
 void scratch::SceneNode::setTransform(glm::mat4 transform) {
-    glm::vec3 skew = glm::vec3();
-    glm::vec4 perspective = glm::vec4();
+    glm::vec3 skew = glm::vec3(0);
+    glm::vec4 perspective = glm::vec4(0);
     glm::decompose(transform, _scale, _rotation, _position, skew, perspective);
 }
 

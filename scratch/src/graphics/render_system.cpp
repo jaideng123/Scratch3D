@@ -22,9 +22,51 @@ void GLAPIENTRY messageCallback(GLenum source,
                                 GLsizei length,
                                 const GLchar *message,
                                 const void *userParam) {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
+    std::stringstream messageBuffer;
+    messageBuffer << "---------------------opengl-callback-start------------" << std::endl;
+    messageBuffer << "message: "<< message << std::endl;
+    messageBuffer << "type: ";
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+            messageBuffer << "ERROR";
+            break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            messageBuffer << "DEPRECATED_BEHAVIOR";
+            break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            messageBuffer << "UNDEFINED_BEHAVIOR";
+            break;
+        case GL_DEBUG_TYPE_PORTABILITY:
+            messageBuffer << "PORTABILITY";
+            break;
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            messageBuffer << "PERFORMANCE";
+            break;
+        case GL_DEBUG_TYPE_OTHER:
+            messageBuffer << "OTHER";
+            break;
+    }
+    messageBuffer << std::endl;
+
+    messageBuffer << "id: " << id << std::endl;
+    messageBuffer << "severity: ";
+    switch (severity){
+        case GL_DEBUG_SEVERITY_LOW:
+            messageBuffer << "LOW";
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            messageBuffer << "MEDIUM";
+            break;
+        case GL_DEBUG_SEVERITY_HIGH:
+            messageBuffer << "HIGH";
+            break;
+        default:
+            // Filter out messages without severity
+            return;
+    }
+    messageBuffer << std::endl;
+    messageBuffer << "---------------------opengl-callback-end--------------" << std::endl;
+    std::cout << messageBuffer.str();
 }
 
 void RenderSystem::setup() {
@@ -83,6 +125,9 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
     std::optional<scratch::Material> currentMaterial = {};
     for (auto mesh : renderQueue) {
         if (!currentMaterial.has_value() || mesh.getMaterial()->getId() != currentMaterial.value().getId()) {
+            if(currentMaterial.has_value()){
+                currentMaterial.value().clearParameters();
+            }
             currentMaterial = *mesh.getMaterial();
             currentMaterial.value().activate();
             currentMaterial.value().getShader()->setMat4("view", view);
