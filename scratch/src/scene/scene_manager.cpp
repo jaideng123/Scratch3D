@@ -236,7 +236,7 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         unsigned int targetShaderId = (*itr)["shaderId"].GetUint();
         std::shared_ptr<scratch::Shader> targetShader;
         for (auto shader: _shaders) {
-            if(shader->getId() == targetShaderId){
+            if (shader->getId() == targetShaderId) {
                 targetShader = shader;
             }
         }
@@ -255,7 +255,7 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         for (int i = 0; i < materials.size(); ++i) {
             unsigned int materialId = (*itr)["materialIds"].GetArray()[i].GetUint();
             std::shared_ptr<scratch::Material> targetMaterial;
-            for (const auto& material : _materials) {
+            for (const auto &material : _materials) {
                 if (material->getId() == materialId) {
                     targetMaterial = material;
                 }
@@ -309,5 +309,11 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     _directionalLight = std::make_shared<scratch::DirectionalLight>();
     _directionalLight->deserialize(document["directionalLight"]);
 
+    _currentSceneFilePath = scenePath;
+
     std::cout << "Finished Loading Scene" << std::endl;
+}
+
+const std::string &scratch::SceneManager::getCurrentSceneFilePath() const {
+    return _currentSceneFilePath;
 }

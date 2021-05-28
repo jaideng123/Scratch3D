@@ -6,6 +6,12 @@ namespace scratch {
     public:
         // Draws Gizmo
         void render();
+    private:
+        bool demoWindowOpen;
+
+        void reloadCurrentScene() const;
+
+        void saveCurrentScene() const;
     };
 
 }

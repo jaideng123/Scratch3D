@@ -2,7 +2,9 @@
 #include "main.h"
 
 // Dear IMGUI Headers
-#include "imgui.h"
+#include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
+
 
 // Standard Headers
 #include <cstdlib>
@@ -65,7 +67,6 @@ int main() {
 
     std::cout << "starting rendering loop" << std::endl;
 
-
     // Rendering Loop
     while (glfwWindowShouldClose(scratch::MainWindow) == false) {
         glfwPollEvents();
@@ -74,11 +75,15 @@ int main() {
         handleInput();
 
         RenderSystem::startFrame();
+
         auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(
                 selectedSceneNodeId);
         if (selectedNode != nullptr) {
             ImGui::SetNextWindowPos(ImVec2(0, 250.0f), ImGuiCond_Once);
             ImGui::Begin("Selected Scene Node");
+            std::string currentName = selectedNode->getName();
+            ImGui::InputText("##NODE-NAME", &currentName);
+            selectedNode->setName(currentName);
             if (ImGui::CollapsingHeader("Transform Edit", ImGuiTreeNodeFlags_DefaultOpen)) {
                 glm::mat4 matrix = selectedNode->generateTransformMatrix();
                 transformGizmo.setCurrentTransform(matrix);

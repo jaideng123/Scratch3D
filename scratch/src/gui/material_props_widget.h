@@ -15,7 +15,8 @@ namespace scratch {
     private:
         std::vector<std::shared_ptr<Material>> _materials;
 
-        std::string renderPropertyName(const std::shared_ptr<Material> &material, const std::string& propertyName) const;
+        std::string renderPropertyName(const std::shared_ptr<Material> &material,
+                                       const std::string &propertyName, size_t propertyIndex) const;
     };
 
 }

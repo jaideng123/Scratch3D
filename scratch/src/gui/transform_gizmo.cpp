@@ -12,12 +12,6 @@
 void scratch::TransformGizmo::render() {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-    if (ImGui::IsKeyPressed(90))
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    if (ImGui::IsKeyPressed(69))
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    if (ImGui::IsKeyPressed(82)) // r Key
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
     if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
         mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
     ImGui::SameLine();

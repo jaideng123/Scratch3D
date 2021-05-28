@@ -151,8 +151,6 @@ void RenderSystem::startFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    static bool showDemoWindow(false);
-    ImGui::ShowDemoWindow(&showDemoWindow);
     ImGuizmo::BeginFrame();
 }
 

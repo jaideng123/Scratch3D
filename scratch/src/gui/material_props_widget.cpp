@@ -16,7 +16,9 @@ void scratch::MaterialPropsWidget::render() {
         std::string materialName = "Material " + std::to_string(material->getId());
         if (ImGui::TreeNodeEx(materialName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
             auto parameters = material->getParameters();
+            int i = 0;
             for (const auto &param : parameters) {
+                ++i;
                 std::string propertyName = param.first;
                 scratch::Parameter propertyValue = param.second;
                 // TODO: remove this once model matrix is no longer part of material
@@ -24,7 +26,7 @@ void scratch::MaterialPropsWidget::render() {
                     continue;
                 }
                 std::string inputValueId = "##VALUE" + propertyName;
-                propertyName = renderPropertyName(material, propertyName);
+                propertyName = renderPropertyName(material, propertyName, i);
                 ImGui::PushItemWidth(150);
                 switch (propertyValue.type) {
                     case scratch::ParameterType::FLOAT: {
@@ -55,7 +57,7 @@ void scratch::MaterialPropsWidget::render() {
                     }
                         break;
                     default:
-                        SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 }
                 ImGui::PopItemWidth();
                 ImGui::SameLine();
@@ -80,7 +82,7 @@ void scratch::MaterialPropsWidget::render() {
                                 }
                                     break;
                                 default:
-                                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                                SCRATCH_ASSERT_NEVER("Unknown Param Type");
                             }
                         }
                     }
@@ -104,9 +106,10 @@ void scratch::MaterialPropsWidget::render() {
 }
 
 std::string scratch::MaterialPropsWidget::renderPropertyName(const std::shared_ptr<Material> &material,
-                                                             const std::string& propertyName) const {
+                                                             const std::string &propertyName,
+                                                             size_t propertyIndex) const {
     // TODO: fix this!!!!!
-    std::string inputNameId = "##NAME";
+    std::string inputNameId = "##PROPERTYNAME-" + std::to_string(propertyIndex);
     std::string currentName = propertyName;
     ImGui::InputText(inputNameId.c_str(), &currentName);
     if (currentName != propertyName) {

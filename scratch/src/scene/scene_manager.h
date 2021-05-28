@@ -38,7 +38,10 @@ namespace scratch {
 
         void loadScene(std::string scenePath);
 
+        const std::string &getCurrentSceneFilePath() const;
+
     private:
+        std::string _currentSceneFilePath;
         scratch::IdFactory _idFactory;
         scratch::SceneNode _rootNode;
         // TODO: move to ResourceManager
