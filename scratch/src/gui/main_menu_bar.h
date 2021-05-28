@@ -12,6 +12,10 @@ namespace scratch {
         void reloadCurrentScene() const;
 
         void saveCurrentScene() const;
+
+        void openSceneDialog() const;
+
+        void saveSceneDialog() const;
     };
 
 }

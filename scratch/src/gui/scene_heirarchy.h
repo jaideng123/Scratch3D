@@ -16,11 +16,13 @@ namespace scratch {
 
         void setRootNode(SceneNode &rootNode);
 
+        void setSceneName(std::string sceneName);
+
     private:
         constexpr static const float Y_OFFSET = 30.0f;
         std::shared_ptr<scratch::SceneNode> _selectedNode;
         scratch::SceneNode &_rootNode;
-
+        std::string _sceneName;
     };
 
 }

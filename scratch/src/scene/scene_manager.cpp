@@ -16,6 +16,7 @@ scratch::SceneManager::SceneManager() {
     _idFactory = scratch::IdFactory();
     _rootNode = scratch::SceneNode();
     _rootNode.setId(_idFactory.generateId());
+    _currentSceneFilePath = "";
 }
 
 std::shared_ptr<scratch::Renderable>

@@ -18,6 +18,33 @@ option(BUILD_OPENGL3_DEMOS OFF)
 option(BUILD_UNIT_TESTS OFF)
 add_subdirectory(scratch/vendor/bullet3)
 
+include(CheckIncludeFile)
+set(NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_common.c)
+
+macro(REQUIRE_INCLUDE_FILE path name)
+    CHECK_INCLUDE_FILE(${path} ${name})
+    if (NOT ${name})
+        message(FATAL_ERROR "${path} not found")
+    endif ()
+endmacro()
+
+# add specific implementations
+if (WIN32)
+    REQUIRE_INCLUDE_FILE(windows.h HAS_WINDOWS)
+    list(APPEND NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_win.cpp)
+elseif (APPLE)
+    REQUIRE_INCLUDE_FILE(AppKit/AppKit.h HAS_APPKIT)
+    list(APPEND NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_cocoa.m)
+elseif (UNIX)
+    REQUIRE_INCLUDE_FILE(gtk/gtk.h HAS_GTK)
+    list(APPEND NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_gtk.c)
+elseif (UNIX)
+    message(FATAL_ERROR "Cannot detect your system")
+endif ()
+
+add_library(nativefiledialog ${NFD_SOURCES})
+
+
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG /W4 /std:c++17 /MP /incremental")
 else ()
@@ -38,6 +65,7 @@ include_directories(
         scratch/vendor/imgui
         scratch/vendor/ImGuizmo
         scratch/vendor/rapidjson
+        scratch/vendor/nativefiledialog/src/include
 )
 
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
@@ -52,7 +80,8 @@ file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
         scratch/vendor/rapidjson/include/rapidjson/*.h
         scratch/vendor/rapidjson/include/rapidjson/error/*.h
         scratch/vendor/rapidjson/include/rapidjson/msinttypes/*.h
-        scratch/vendor/rapidjson/include/rapidjson/internal/*.h)
+        scratch/vendor/rapidjson/include/rapidjson/internal/*.h
+        scratch/vendor/nativefiledialog/src/include/*)
 file(GLOB PROJECT_HEADERS scratch/src/**/*.h* scratch/src/*.h*)
 file(GLOB PROJECT_SOURCES scratch/src/**/*.cpp scratch/src/*.cpp)
 file(GLOB PROJECT_CONFIGS CMakeLists.txt
@@ -72,7 +101,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
         ${VENDORS_SOURCES})
 target_link_libraries(${PROJECT_NAME} assimp glfw
         ${GLFW_LIBRARIES} ${GLAD_LIBRARIES}
-        BulletDynamics BulletCollision LinearMath)
+        BulletDynamics BulletCollision LinearMath nativefiledialog)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
 

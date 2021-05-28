@@ -10,7 +10,7 @@
 void scratch::SceneHeirarchy::render() {
     ImGui::SetNextWindowPos(ImVec2(0, Y_OFFSET), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Once);
-    ImGui::Begin("Scene Hierarchy");
+    ImGui::Begin(_sceneName.c_str());
     ImGui::BeginChild("NodeList");
     static int selection = 1;
     for (auto node:_rootNode.getChildren()) {
@@ -37,3 +37,7 @@ void scratch::SceneHeirarchy::setRootNode(scratch::SceneNode &rootNode) {
 }
 
 scratch::SceneHeirarchy::SceneHeirarchy(scratch::SceneNode &rootNode) : _rootNode(rootNode) {}
+
+void scratch::SceneHeirarchy::setSceneName(const std::string sceneName) {
+    _sceneName = sceneName;
+}

@@ -155,7 +155,7 @@ namespace scratch {
             unsigned int specularNr = 1;
             unsigned int normalNr = 1;
             unsigned int heightNr = 1;
-            for (unsigned int i = 0; i < _textures.size(); i++) {
+            for (auto i = 0; i < _textures.size(); i++) {
                 glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
                 // retrieve texture number (the N in diffuse_textureN)
                 scratch::Texture texture = _textures[i];
@@ -196,7 +196,7 @@ namespace scratch {
                         _shader->setMat4(key, scratch::StringConverter::parsemat4(val.value));
                         break;
                     default:
-                        SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
                         break;
                 }
             }
@@ -221,7 +221,7 @@ namespace scratch {
                         _shader->setMat4(key, glm::mat4(1));
                         break;
                     default:
-                        SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
                         break;
                 }
             }

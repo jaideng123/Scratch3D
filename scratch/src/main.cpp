@@ -15,6 +15,7 @@
 #include <gui/main_menu_bar.h>
 #include <backends/imgui_impl_glfw.h>
 #include <gui/material_props_widget.h>
+#include <filesystem>
 
 // Local Headers
 #include "time/scratch_time.h"
@@ -100,6 +101,13 @@ int main() {
 
         sceneHeirarchyGizmo.setRootNode(scratch::ScratchManagers->sceneManager->getRootNode());
         sceneHeirarchyGizmo.setSelectedNode(selectedNode);
+        if (scratch::ScratchManagers->sceneManager->getCurrentSceneFilePath().empty()) {
+            sceneHeirarchyGizmo.setSceneName("New Scene");
+        } else {
+            std::string currentScenePath = scratch::ScratchManagers->sceneManager->getCurrentSceneFilePath();
+            std::filesystem::path actualPath = std::filesystem::path(currentScenePath);
+            sceneHeirarchyGizmo.setSceneName(actualPath.filename().string());
+        }
         sceneHeirarchyGizmo.render();
         if (sceneHeirarchyGizmo.getSelectedNode() != nullptr) {
             selectedSceneNodeId = sceneHeirarchyGizmo.getSelectedNode()->getId();

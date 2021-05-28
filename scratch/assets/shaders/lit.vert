@@ -8,6 +8,7 @@ layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 // will be available in frag shader
 out vec2 TexCoords;
+out vec3 Normal;
 out vec3 FragPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;

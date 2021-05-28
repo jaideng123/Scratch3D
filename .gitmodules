@@ -26,3 +26,6 @@
 [submodule "scratch/vendor/rapidjson"]
 	path = scratch/vendor/rapidjson
 	url = https://github.com/Tencent/rapidjson
+[submodule "scratch/vendor/nativefiledialog"]
+	path = scratch/vendor/nativefiledialog
+	url = https://github.com/mlabbe/nativefiledialog.git
