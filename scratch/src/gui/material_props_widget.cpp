@@ -29,8 +29,17 @@ void scratch::MaterialPropsWidget::render() {
                 propertyName = renderPropertyName(material, propertyName, i);
                 ImGui::PushItemWidth(150);
                 switch (propertyValue.type) {
+                    case scratch::ParameterType::BOOL: {
+                        bool originalValue = std::any_cast<bool>(propertyValue.value);
+                        bool currentValue = originalValue;
+                        ImGui::Checkbox(inputValueId.c_str(), &currentValue);
+                        if (currentValue != originalValue) {
+                            material->setBool(propertyName, currentValue);
+                        }
+                    }
+                        break;
                     case scratch::ParameterType::FLOAT: {
-                        float originalValue = scratch::StringConverter::parsefloat(propertyValue.value);
+                        float originalValue = std::any_cast<float>(propertyValue.value);
                         float currentValue = originalValue;
                         ImGui::InputFloat(inputValueId.c_str(), &currentValue);
                         if (currentValue != originalValue) {
@@ -39,20 +48,11 @@ void scratch::MaterialPropsWidget::render() {
                     }
                         break;
                     case scratch::ParameterType::VECTOR3: {
-                        glm::vec3 originalValue = scratch::StringConverter::parsevec3(propertyValue.value);
+                        glm::vec3 originalValue = std::any_cast<glm::vec3>(propertyValue.value);
                         glm::vec3 currentValue = originalValue;
                         ImGui::InputFloat3(inputValueId.c_str(), glm::value_ptr(currentValue));
                         if (currentValue != originalValue) {
                             material->setVec3(propertyName, currentValue);
-                        }
-                    }
-                        break;
-                    case scratch::ParameterType::BOOL: {
-                        bool originalValue = scratch::StringConverter::parsebool(propertyValue.value);
-                        bool currentValue = originalValue;
-                        ImGui::Checkbox(inputValueId.c_str(), &currentValue);
-                        if (currentValue != originalValue) {
-                            material->setBool(propertyName, currentValue);
                         }
                     }
                         break;

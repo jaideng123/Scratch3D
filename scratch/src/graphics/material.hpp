@@ -17,6 +17,7 @@
 #include <include/rapidjson/prettywriter.h>
 #include <include/rapidjson/document.h>
 #include <utilities/assert.h>
+#include <any>
 
 #include "converter/string_converter.h"
 #include "shader.h"
@@ -47,7 +48,7 @@ namespace scratch {
                                                                     {"MATRIX4", MATRIX4}};
 
     struct Parameter {
-        std::string value;
+        std::any value;
         scratch::ParameterType type;
     };
 
@@ -107,35 +108,35 @@ namespace scratch {
         void setBool(const std::string &name, bool value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::BOOL;
-            param.value = scratch::StringConverter::toString(value, false);
+            param.value = value;
             _parameters[name] = param;
         }
 
         void setInt(const std::string &name, int value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::INT;
-            param.value = scratch::StringConverter::toString(value);
+            param.value = value;
             _parameters[name] = param;
         }
 
         void setFloat(const std::string &name, float value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::FLOAT;
-            param.value = scratch::StringConverter::toString(value);
+            param.value = value;
             _parameters[name] = param;
         }
 
         void setMat4(const std::string &name, glm::mat4 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::MATRIX4;
-            param.value = scratch::StringConverter::toString(value);
+            param.value = value;
             _parameters[name] = param;
         }
 
         void setVec3(const std::string &name, glm::vec3 value) {
             scratch::Parameter param;
             param.type = scratch::ParameterType::VECTOR3;
-            param.value = scratch::StringConverter::toString(value);
+            param.value = value;
             _parameters[name] = param;
         }
 
@@ -181,19 +182,19 @@ namespace scratch {
             for (auto const &[key, val] : _parameters) {
                 switch (val.type) {
                     case BOOL:
-                        _shader->setBool(key, scratch::StringConverter::parsebool(val.value));
+                        _shader->setBool(key, std::any_cast<bool>(val.value));
                         break;
                     case INT:
-                        _shader->setInt(key, scratch::StringConverter::parseint(val.value));
+                        _shader->setInt(key, std::any_cast<int>(val.value));
                         break;
                     case FLOAT:
-                        _shader->setFloat(key, scratch::StringConverter::parsefloat(val.value));
+                        _shader->setFloat(key, std::any_cast<float>(val.value));
                         break;
                     case VECTOR3:
-                        _shader->setVec3(key, scratch::StringConverter::parsevec3(val.value));
+                        _shader->setVec3(key, std::any_cast<glm::vec3>(val.value));
                         break;
                     case MATRIX4:
-                        _shader->setMat4(key, scratch::StringConverter::parsemat4(val.value));
+                        _shader->setMat4(key, std::any_cast<glm::mat4>(val.value));
                         break;
                     default:
                     SCRATCH_ASSERT_NEVER("Unknown Param Type");
@@ -267,8 +268,29 @@ namespace scratch {
                 writer.String(type.c_str(), static_cast<rapidjson::SizeType>(type.length()));
 
                 writer.String("value");
-                writer.String(param.second.value.c_str(),
-                              static_cast<rapidjson::SizeType>(param.second.value.length()));
+                std::string serializedValue = "";
+                switch (param.second.type) {
+                    case BOOL:
+                        serializedValue = scratch::StringConverter::toString(std::any_cast<bool>(param.second.value));
+                        break;
+                    case INT:
+                        serializedValue = scratch::StringConverter::toString(std::any_cast<int>(param.second.value));
+                        break;
+                    case FLOAT:
+                        serializedValue = scratch::StringConverter::toString(std::any_cast<float>(param.second.value));
+                        break;
+                    case VECTOR3:
+                        serializedValue = scratch::StringConverter::toString(std::any_cast<glm::vec3>(param.second.value));
+                        break;
+                    case MATRIX4:
+                        serializedValue = scratch::StringConverter::toString(std::any_cast<glm::mat4>(param.second.value));
+                        break;
+                    default:
+                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                        break;
+                }
+                writer.String(serializedValue.c_str(),
+                              static_cast<rapidjson::SizeType>(serializedValue.length()));
 
                 writer.EndObject();
             }
@@ -295,7 +317,27 @@ namespace scratch {
                 std::string typeString = (*itr)["type"].GetString();
                 scratch::Parameter param;
                 param.type = STRING_TO_PARAM_TYPE.find(typeString)->second;
-                param.value = (*itr)["value"].GetString();
+                std::string rawValue = (*itr)["value"].GetString();
+                switch (param.type) {
+                    case BOOL:
+                        param.value = scratch::StringConverter::parsebool(rawValue);
+                        break;
+                    case INT:
+                        param.value = scratch::StringConverter::parseint(rawValue);
+                        break;
+                    case FLOAT:
+                        param.value = scratch::StringConverter::parsefloat(rawValue);
+                        break;
+                    case VECTOR3:
+                        param.value = scratch::StringConverter::parsevec3(rawValue);
+                        break;
+                    case MATRIX4:
+                        param.value = scratch::StringConverter::parsemat4(rawValue);
+                        break;
+                    default:
+                    SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                        break;
+                }
                 _parameters[key] = param;
             }
 

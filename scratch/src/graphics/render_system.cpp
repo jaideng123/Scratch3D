@@ -24,7 +24,7 @@ void GLAPIENTRY messageCallback(GLenum source,
                                 const void *userParam) {
     std::stringstream messageBuffer;
     messageBuffer << "---------------------opengl-callback-start------------" << std::endl;
-    messageBuffer << "message: "<< message << std::endl;
+    messageBuffer << "message: " << message << std::endl;
     messageBuffer << "type: ";
     switch (type) {
         case GL_DEBUG_TYPE_ERROR:
@@ -50,7 +50,7 @@ void GLAPIENTRY messageCallback(GLenum source,
 
     messageBuffer << "id: " << id << std::endl;
     messageBuffer << "severity: ";
-    switch (severity){
+    switch (severity) {
         case GL_DEBUG_SEVERITY_LOW:
             messageBuffer << "LOW";
             break;
@@ -124,17 +124,12 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
 
     std::optional<scratch::Material> currentMaterial = {};
     for (auto mesh : renderQueue) {
-        if (!currentMaterial.has_value() || mesh.getMaterial()->getId() != currentMaterial.value().getId()) {
-            if(currentMaterial.has_value()){
-                currentMaterial.value().clearParameters();
-            }
-            currentMaterial = *mesh.getMaterial();
-            currentMaterial.value().activate();
-            currentMaterial.value().getShader()->setMat4("view", view);
-            currentMaterial.value().getShader()->setMat4("projection", projection);
-            currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
-            directionalLight.applyToShader(*currentMaterial.value().getShader());
-        }
+        currentMaterial = *mesh.getMaterial();
+        currentMaterial.value().activate();
+        currentMaterial.value().getShader()->setMat4("view", view);
+        currentMaterial.value().getShader()->setMat4("projection", projection);
+        currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
+        directionalLight.applyToShader(*currentMaterial.value().getShader());
         mesh.draw();
     }
 

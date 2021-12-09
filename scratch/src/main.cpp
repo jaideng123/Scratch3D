@@ -53,7 +53,7 @@ int main() {
             "./assets/shaders/entity-selection.vert",
             "./assets/shaders/entity-selection.frag");
 
-//    loadDefaultScene();
+    loadDefaultScene();
     selectedSceneNodeId = 0;
 
     scratch::MainCamera = new scratch::Camera();
@@ -209,25 +209,39 @@ void loadDefaultScene() {
     auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert",
                                                                           "./assets/shaders/lit.frag");
 
-    std::cout << "Loading Models..." << std::endl;
-    auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-            "./assets/models/nanosuit/nanosuit.obj", litShader);
-    auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-            "./assets/models/stone-man/Stone.obj", litShader);
 
-    std::cout << "Creating Entities..." << std::endl;
-    auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
-    auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
+    std::cout << "Creating Stone Men..." << std::endl;
+    for (int i = 0; i < 100; ++i) {
+        auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+                "./assets/models/stone-man/Stone.obj", litShader);
+        auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
+        for (const auto &material : stoneManEntity->getRenderable()->getMaterials()) {
+            material->setFloat("material.shininess", 32);
+        }
+        auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
+        stoneManNode->setName("Stone Man - " + std::to_string(i));
+        stoneManNode->setPosition(glm::vec3(i * .1, 0, 0));
+        stoneManNode->setScale(glm::vec3(0.2f));
+        scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
+        std::cout << "Created: " << stoneManNode->getName() << std::endl;
 
-    std::cout << "Creating Scene Nodes..." << std::endl;
-    auto nanosuitNode = scratch::ScratchManagers->sceneManager->createSceneNode(nanosuitEntity);
-    nanosuitNode->setPosition(glm::vec3(-2, 0, 0));
-    nanosuitNode->setScale(glm::vec3(0.2f));
-    scratch::ScratchManagers->sceneManager->getRootNode().addChild(nanosuitNode);
+    }
 
-    auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
-    stoneManNode->setScale(glm::vec3(0.2f));
-    scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
+    std::cout << "Creating Suit men..." << std::endl;
+    for (int i = 0; i < 1; ++i) {
+        auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+                "./assets/models/nanosuit/nanosuit.obj", litShader);
+        auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
+        for (const auto &material : nanosuitEntity->getRenderable()->getMaterials()) {
+            material->setFloat("material.shininess", 32);
+        }
+        auto nanosuitNode = scratch::ScratchManagers->sceneManager->createSceneNode(nanosuitEntity);
+        nanosuitNode->setName("Nano suit - " + std::to_string(i));
+        nanosuitNode->setPosition(glm::vec3(-2 + i * .1, 0, 0));
+        nanosuitNode->setScale(glm::vec3(0.2f));
+        scratch::ScratchManagers->sceneManager->getRootNode().addChild(nanosuitNode);
+    }
+
 
     auto directionalLight = scratch::ScratchManagers->sceneManager->createDirectionalLight();
     directionalLight->setDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
