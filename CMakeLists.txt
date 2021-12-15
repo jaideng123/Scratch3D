@@ -18,6 +18,8 @@ option(BUILD_OPENGL3_DEMOS OFF)
 option(BUILD_UNIT_TESTS OFF)
 add_subdirectory(scratch/vendor/bullet3)
 
+add_subdirectory(scratch/vendor/xxHash/cmake_unofficial scratch/vendor/xxHash/build EXCLUDE_FROM_ALL)
+
 include(CheckIncludeFile)
 set(NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_common.c)
 
@@ -101,7 +103,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
         ${VENDORS_SOURCES})
 target_link_libraries(${PROJECT_NAME} assimp glfw
         ${GLFW_LIBRARIES} ${GLAD_LIBRARIES}
-        BulletDynamics BulletCollision LinearMath nativefiledialog)
+        BulletDynamics BulletCollision LinearMath nativefiledialog xxHash::xxhash)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
 

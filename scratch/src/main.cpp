@@ -16,6 +16,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <gui/material_props_widget.h>
 #include <filesystem>
+#include "xxhash.h"
 
 // Local Headers
 #include "time/scratch_time.h"
@@ -211,7 +212,7 @@ void loadDefaultScene() {
 
 
     std::cout << "Creating Stone Men..." << std::endl;
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1; ++i) {
         auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
                 "./assets/models/stone-man/Stone.obj", litShader);
         auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
@@ -226,6 +227,10 @@ void loadDefaultScene() {
         std::cout << "Created: " << stoneManNode->getName() << std::endl;
 
     }
+    std::string test = "./assets/models/nanosuit/nanosuit.obj";
+    XXH64_hash_t const seed = 0;
+    XXH64_hash_t hash = XXH64(test.c_str(), test.length(), seed);
+    std::cout << "Generated Hash:" << std::to_string(hash) << std::endl;
 
     std::cout << "Creating Suit men..." << std::endl;
     for (int i = 0; i < 1; ++i) {

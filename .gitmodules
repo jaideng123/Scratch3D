@@ -29,3 +29,6 @@
 [submodule "scratch/vendor/nativefiledialog"]
 	path = scratch/vendor/nativefiledialog
 	url = https://github.com/mlabbe/nativefiledialog.git
+[submodule "scratch/vendor/xxHash"]
+	path = scratch/vendor/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
