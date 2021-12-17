@@ -41,7 +41,7 @@ bool checkSelection = false;
 
 
 int main() {
-    RenderSystem::setup();
+    scratch::RenderSystem::setup();
     scratch::Time::initializeClock();
     scratch::ScratchManagers = new scratch::Managers();
 
@@ -54,7 +54,7 @@ int main() {
             "./assets/shaders/entity-selection.vert",
             "./assets/shaders/entity-selection.frag");
 
-    loadDefaultScene();
+//    loadDefaultScene();
     selectedSceneNodeId = 0;
 
     scratch::MainCamera = new scratch::Camera();
@@ -76,7 +76,7 @@ int main() {
 
         handleInput();
 
-        RenderSystem::startFrame();
+        scratch::RenderSystem::startFrame();
 
         auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(
                 selectedSceneNodeId);
@@ -124,7 +124,7 @@ int main() {
 
         scratch::ScratchManagers->sceneManager->render(*scratch::MainCamera);
 
-        RenderSystem::endFrame();
+        scratch::RenderSystem::endFrame();
     }
     glfwTerminate();
     return EXIT_SUCCESS;
@@ -212,7 +212,7 @@ void loadDefaultScene() {
 
 
     std::cout << "Creating Stone Men..." << std::endl;
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 10; ++i) {
         auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
                 "./assets/models/stone-man/Stone.obj", litShader);
         auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
@@ -221,7 +221,7 @@ void loadDefaultScene() {
         }
         auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
         stoneManNode->setName("Stone Man - " + std::to_string(i));
-        stoneManNode->setPosition(glm::vec3(i * .1, 0, 0));
+        stoneManNode->setPosition(glm::vec3(i * .5, 0, 0));
         stoneManNode->setScale(glm::vec3(0.2f));
         scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
         std::cout << "Created: " << stoneManNode->getName() << std::endl;

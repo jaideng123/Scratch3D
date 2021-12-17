@@ -254,10 +254,6 @@ namespace scratch {
             writer.StartArray();
 
             for (auto &param : _parameters) {
-                // TODO: remove once this is no longer a material property
-                if (param.first == "model") {
-                    continue;
-                }
                 writer.StartObject();
 
                 writer.String("key");

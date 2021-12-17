@@ -6,4 +6,5 @@
 
 scratch::Managers::Managers() {
     sceneManager = std::make_unique<SceneManager>();
+    resourceManager = std::make_unique<ResourceManager>();
 }

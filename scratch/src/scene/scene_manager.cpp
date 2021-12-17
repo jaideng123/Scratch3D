@@ -22,13 +22,12 @@ scratch::SceneManager::SceneManager() {
 std::shared_ptr<scratch::Renderable>
 scratch::SceneManager::createModelRenderable(const std::string &modelPath,
                                              const std::shared_ptr<Shader> &defaultShader) {
-    std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(_idFactory.generateId(), modelPath);
+    std::shared_ptr<scratch::Model> newModel = ScratchManagers->resourceManager->loadModel(modelPath);
     for (auto material : newModel->getMaterials()) {
         material->setId(_idFactory.generateId());
         _materials.push_back(material);
     }
     newModel->setDefaultShader(defaultShader);
-    _models.push_back(newModel);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
             _idFactory.generateId(), newModel);
     _renderables.push_back(pRenderable);
@@ -60,16 +59,14 @@ scratch::SceneManager::createShader(const std::string &vertexPath, const std::st
 
 
 void scratch::SceneManager::render(const scratch::Camera &camera) {
-    std::vector<scratch::Mesh> renderQueue = std::vector<scratch::Mesh>();
+    std::vector<scratch::RenderItem> renderQueue = std::vector<scratch::RenderItem>();
     for (auto currentNode : _rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
         std::vector<scratch::Mesh> meshesToRender = currentEntity->getRenderable()->getMeshes();
-        glm::mat4 modelMatrix = currentNode->generateTransformMatrix();
+        glm::mat4 transformMatrix = currentNode->generateTransformMatrix();
         for (auto &mesh : meshesToRender) {
-            // TODO: get rid of these
-            // also remove code from serialization in material
-            mesh.getMaterial()->setMat4("model", modelMatrix);
-            renderQueue.push_back(mesh);
+            scratch::RenderItem newRenderItem(mesh,mesh.getMaterial(),transformMatrix);
+            renderQueue.push_back(newRenderItem);
         }
     }
     RenderSystem::render(renderQueue, *_directionalLight);
@@ -158,14 +155,6 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     }
     writer.EndArray();
 
-    std::cout << "Serializing Models" << std::endl;
-    writer.String("models");
-    writer.StartArray();
-    for (auto &model : _models) {
-        model->serialize(writer);
-    }
-    writer.EndArray();
-
     std::cout << "Serializing Renderables" << std::endl;
     writer.String("renderables");
     writer.StartArray();
@@ -205,6 +194,7 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
 
 }
 
+// TODO: Fix Scene Loading
 void scratch::SceneManager::loadScene(std::string scenePath) {
     std::ifstream sceneFile;
     sceneFile.open(scenePath);
@@ -245,27 +235,6 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         _materials.push_back(material);
     }
 
-    std::cout << "Deserializing Models" << std::endl;
-    rapidjson::Value &modelsArray = document["models"].GetArray();
-    _models.clear();
-    for (rapidjson::Value::ConstValueIterator itr = modelsArray.Begin(); itr != modelsArray.End(); ++itr) {
-        std::shared_ptr<scratch::Model> model = std::make_shared<scratch::Model>();
-        model->deserialize(*itr);
-
-        auto materials = model->getMaterials();
-        for (int i = 0; i < materials.size(); ++i) {
-            unsigned int materialId = (*itr)["materialIds"].GetArray()[i].GetUint();
-            std::shared_ptr<scratch::Material> targetMaterial;
-            for (const auto &material : _materials) {
-                if (material->getId() == materialId) {
-                    targetMaterial = material;
-                }
-            }
-            model->swapMaterial(i, targetMaterial);
-        }
-        _models.push_back(model);
-    }
-
     std::cout << "Deserializing Renderables" << std::endl;
     rapidjson::Value &renderablesArray = document["renderables"].GetArray();
     _renderables.clear();
@@ -273,13 +242,8 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
         std::shared_ptr<scratch::Renderable> newRenderable;
         if ((*itr)["type"].GetString() == scratch::ModelRenderable::TYPE) {
             // TODO: figure out how to move this into a deserialize function
-            std::shared_ptr<scratch::Model> linkedModel;
-            unsigned int targetModelId = (*itr)["modelId"].GetUint();
-            for (auto &model : _models) {
-                if (model->getId() == targetModelId) {
-                    linkedModel = model;
-                }
-            }
+            std::string targetModelPath = (*itr)["modelPath"].GetString();
+            std::shared_ptr<scratch::Model> linkedModel = ScratchManagers->resourceManager->loadModel(targetModelPath);
             newRenderable = std::make_shared<scratch::ModelRenderable>((*itr)["id"].GetUint(), linkedModel);
         } else {
             throw std::runtime_error("Unexpected Renderable Type");

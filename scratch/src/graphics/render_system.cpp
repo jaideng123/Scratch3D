@@ -69,7 +69,7 @@ void GLAPIENTRY messageCallback(GLenum source,
     std::cout << messageBuffer.str();
 }
 
-void RenderSystem::setup() {
+void scratch::RenderSystem::setup() {
     // stbi_set_flip_vertically_on_load(true);
     // Load GLFW and Create a Window
     glfwInit();
@@ -113,7 +113,7 @@ void RenderSystem::setup() {
     ImGui_ImplOpenGL3_Init(glslVersion);
 }
 
-void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch::DirectionalLight &directionalLight) {
+void scratch::RenderSystem::render(const std::vector<scratch::RenderItem> &renderQueue, scratch::DirectionalLight &directionalLight) {
     // Background Fill Color
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -123,21 +123,24 @@ void RenderSystem::render(const std::vector<scratch::Mesh> &renderQueue, scratch
     glm::vec3 viewPosition = scratch::MainCamera->getPosition();
 
     std::optional<scratch::Material> currentMaterial = {};
-    for (auto mesh : renderQueue) {
-        currentMaterial = *mesh.getMaterial();
+    for (auto renderItem : renderQueue) {
+        currentMaterial = *renderItem.materialRef;
         currentMaterial.value().activate();
         currentMaterial.value().getShader()->setMat4("view", view);
         currentMaterial.value().getShader()->setMat4("projection", projection);
         currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
         directionalLight.applyToShader(*currentMaterial.value().getShader());
-        mesh.draw();
+
+        currentMaterial.value().getShader()->setMat4("model", renderItem.transform);
+
+        renderItem.mesh.draw();
     }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void RenderSystem::startFrame() {
+void scratch::RenderSystem::startFrame() {
     int width, height;
     glfwGetWindowSize(scratch::MainWindow, &width, &height);
     glViewport(0, 0, width, height);
@@ -149,7 +152,7 @@ void RenderSystem::startFrame() {
     ImGuizmo::BeginFrame();
 }
 
-void RenderSystem::endFrame() {
+void scratch::RenderSystem::endFrame() {
     // Flip Buffers and Draw
     glfwSwapBuffers(scratch::MainWindow);
 }

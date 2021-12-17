@@ -47,7 +47,6 @@ namespace scratch {
         // TODO: move to ResourceManager
         std::vector<std::shared_ptr<scratch::Material>> _materials;
         std::vector<std::shared_ptr<scratch::Shader>> _shaders;
-        std::vector<std::shared_ptr<scratch::Model>> _models;
         // These can stay
         std::vector<std::shared_ptr<scratch::Renderable>> _renderables;
         std::vector<std::shared_ptr<scratch::Entity>> _entities;

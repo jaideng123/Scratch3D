@@ -25,8 +25,8 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.String(TYPE.c_str(), static_cast<rapidjson::SizeType>(TYPE.length()));
     writer.String("id");
     writer.Uint(id);
-    writer.String("modelId");
-    writer.Uint(_model->getId());
+    writer.String("modelPath");
+    writer.String(_model->getModelPath().c_str(),static_cast<rapidjson::SizeType>(_model->getModelPath().length()));
 
     writer.EndObject();
 }
