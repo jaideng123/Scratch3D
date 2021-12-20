@@ -7,6 +7,7 @@
 #include <graphics/renderable.h>
 #include "scene_node.h"
 #include "camera/camera.h"
+#include <entt/entt.hpp>
 
 namespace scratch {
 

@@ -20,6 +20,9 @@ add_subdirectory(scratch/vendor/bullet3)
 
 add_subdirectory(scratch/vendor/xxHash/cmake_unofficial scratch/vendor/xxHash/build EXCLUDE_FROM_ALL)
 
+add_subdirectory(scratch/vendor/entt)
+
+
 include(CheckIncludeFile)
 set(NFD_SOURCES scratch/vendor/nativefiledialog/src/nfd_common.c)
 
@@ -68,6 +71,7 @@ include_directories(
         scratch/vendor/ImGuizmo
         scratch/vendor/rapidjson
         scratch/vendor/nativefiledialog/src/include
+        scratch/vendor/entt
 )
 
 file(GLOB VENDORS_SOURCES scratch/vendor/glad/src/glad.c
@@ -103,7 +107,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES}
         ${VENDORS_SOURCES})
 target_link_libraries(${PROJECT_NAME} assimp glfw
         ${GLFW_LIBRARIES} ${GLAD_LIBRARIES}
-        BulletDynamics BulletCollision LinearMath nativefiledialog xxHash::xxhash)
+        BulletDynamics BulletCollision LinearMath nativefiledialog xxHash::xxhash EnTT::EnTT)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
 
