@@ -32,3 +32,6 @@
 [submodule "scratch/vendor/xxHash"]
 	path = scratch/vendor/xxHash
 	url = https://github.com/Cyan4973/xxHash.git
+[submodule "scratch/vendor/entt"]
+	path = scratch/vendor/entt
+	url = https://github.com/skypjack/entt.git
