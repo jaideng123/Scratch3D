@@ -11,6 +11,7 @@ namespace scratch {
     class ModelRenderable : public scratch::Renderable {
     public:
         ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model);
+        ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,std::vector<std::shared_ptr<scratch::Material>> materials );
 
         ModelRenderable();
 
@@ -27,5 +28,6 @@ namespace scratch {
 
     private:
         std::shared_ptr<scratch::Model> _model;
+        std::vector<std::shared_ptr<scratch::Material>> _materials;
     };
 }

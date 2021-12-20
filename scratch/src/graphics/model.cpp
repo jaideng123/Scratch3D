@@ -42,7 +42,7 @@ void scratch::Model::loadModel(const std::string &path) {
     _directory = path.substr(0, path.find_last_of('/'));
 
     for (size_t i = 0; i < scene->mNumMaterials; ++i) {
-        _materials.push_back(transformMaterial(scene->mMaterials[i]));
+        _defaultMaterials.push_back(transformMaterial(scene->mMaterials[i]));
     }
 
     processNode(scene->mRootNode, scene);
@@ -133,7 +133,7 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, _materials[mesh->mMaterialIndex], mesh->mMaterialIndex);
+    return Mesh(vertices, indices, _defaultMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
 }
 
 const std::string &scratch::Model::getModelPath() const {
@@ -151,7 +151,7 @@ void scratch::Model::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> 
 
     writer.String("materialIds");
     writer.StartArray();
-    for (auto material : _materials) {
+    for (auto material : _defaultMaterials) {
         writer.Uint(material->getId());
     }
     writer.EndArray();
@@ -169,7 +169,7 @@ scratch::Model::Model() {
 }
 
 void scratch::Model::setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader) {
-    for (auto &material : _materials) {
+    for (auto &material : _defaultMaterials) {
         material->setShader(defaultShader);
     }
 }
@@ -178,17 +178,8 @@ unsigned int scratch::Model::getId() const {
     return _id;
 }
 
-const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const {
-    return _materials;
-}
-
-void scratch::Model::swapMaterial(const unsigned int index, const std::shared_ptr<scratch::Material> newMaterial) {
-    for (auto &mesh : _meshes) {
-        if (mesh.getMaterialIndex() == index) {
-            mesh.setMaterial(newMaterial);
-        }
-    }
-    _materials[index] = newMaterial;
+const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getDefaultMaterials() const {
+    return _defaultMaterials;
 }
 
 glm::vec3 convertVector3(aiVector3D aiVec3) {

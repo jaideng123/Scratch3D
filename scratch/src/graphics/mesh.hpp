@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "shader.h"
-#include "graphics/material.hpp"
+#include "graphics/material.h"
 
 namespace scratch {
 

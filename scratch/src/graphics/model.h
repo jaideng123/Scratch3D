@@ -10,7 +10,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "graphics/mesh.hpp"
-#include "graphics/material.hpp"
+#include "graphics/material.h"
 #include <include/rapidjson/document.h>
 
 
@@ -33,16 +33,14 @@ namespace scratch {
 
         void setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader);
 
-        const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getMaterials() const;
-
-        void swapMaterial(const unsigned int index, const std::shared_ptr<scratch::Material> newMaterial);
+        const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getDefaultMaterials() const;
 
     private:
         unsigned int _id;
 
         /*  Model Data  */
         std::vector<Mesh> _meshes;
-        std::vector<std::shared_ptr<Material>> _materials;
+        std::vector<std::shared_ptr<Material>> _defaultMaterials;
         std::string _directory;
         std::string _modelPath;
 

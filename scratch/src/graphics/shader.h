@@ -13,7 +13,7 @@ namespace scratch {
     class Shader {
     public:
         // Read + compile shader
-        Shader(const unsigned int Id, const std::string& vertexPath, std::string fragmentPath);
+        Shader(const unsigned int Id, const std::string &name, const std::string &vertexPath, std::string fragmentPath);
 
         Shader() = default;
 
@@ -21,6 +21,8 @@ namespace scratch {
         const std::string &getVertexPath() const;
 
         const std::string &getFragmentPath() const;
+
+        const std::string &getName() const;
 
         unsigned int getShaderId() const;
 
@@ -51,6 +53,7 @@ namespace scratch {
     private:
         unsigned int _id;
         unsigned int _shaderId;
+        std::string _name;
         std::string _vertexPath;
         std::string _fragmentPath;
 

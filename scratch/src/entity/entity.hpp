@@ -33,7 +33,8 @@ namespace scratch {
             writer.String("id");
             writer.Uint(_id);
             writer.String("renderableId");
-            writer.Uint(_renderable->getId());
+            unsigned int renderableId = _renderable->getId();
+            writer.Uint(renderableId);
 
             writer.EndObject();
         }

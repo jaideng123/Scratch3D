@@ -31,9 +31,7 @@ void scratch::MainMenuBar::render() {
         ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Reload Shaders")) {
-        for (auto &shader : scratch::ScratchManagers->sceneManager->getShaders()) {
-            shader->reload();
-        }
+        scratch::ScratchManagers->shaderLibrary->reloadAllShaders();
     }
 
     if (ImGui::MenuItem("ImGui Demo Window")) {

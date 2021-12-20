@@ -24,21 +24,35 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.String("type");
     writer.String(TYPE.c_str(), static_cast<rapidjson::SizeType>(TYPE.length()));
     writer.String("id");
-    writer.Uint(id);
+    writer.Uint(_id);
     writer.String("modelPath");
-    writer.String(_model->getModelPath().c_str(),static_cast<rapidjson::SizeType>(_model->getModelPath().length()));
+    writer.String(_model->getModelPath().c_str(), static_cast<rapidjson::SizeType>(_model->getModelPath().length()));
+    writer.String("materials");
+    writer.StartArray();
+    for (auto material: getMaterials()) {
+        material->serialize(writer);
+    }
+    writer.EndArray();
 
     writer.EndObject();
 }
 
-scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model) : _model(
-        std::move(model)) {
-    this->id = id;
+scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model) : ModelRenderable(id,
+                                                                                                                    model,
+                                                                                                                    model->getDefaultMaterials()) {}
+
+scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
+                                          std::vector<std::shared_ptr<scratch::Material>> materials) : _model(model),
+                                                                                                       _materials(
+                                                                                                               materials) {
+    this->_id = id;
 }
 
 scratch::ModelRenderable::ModelRenderable() {}
 
 const std::vector<std::shared_ptr<scratch::Material>> &scratch::ModelRenderable::getMaterials() const {
-    return _model->getMaterials();
+    return _materials;
 }
+
+
 

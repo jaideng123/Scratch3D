@@ -10,7 +10,7 @@
 namespace scratch {
     class Renderable {
     protected:
-        unsigned int id;
+        unsigned int _id;
     public:
         virtual std::vector<scratch::Mesh> &getMeshes() = 0;
 
@@ -20,6 +20,6 @@ namespace scratch {
 
         virtual void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) = 0;
 
-        unsigned int getId() const;
+        unsigned unsigned int getId() const;
     };
 }

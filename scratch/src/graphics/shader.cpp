@@ -7,8 +7,9 @@
 #include <include/rapidjson/document.h>
 
 
-scratch::Shader::Shader(const unsigned int Id, const std::string &vertexPath, const std::string fragmentPath) {
-    this->_id = Id;
+scratch::Shader::Shader(const unsigned int Id, const std::string &name, const std::string &vertexPath, const std::string fragmentPath) {
+    _id = Id;
+    _name = name;
 
     _vertexPath = vertexPath;
     _fragmentPath = fragmentPath;
@@ -169,6 +170,10 @@ unsigned int scratch::Shader::getShaderId() const {
 
 unsigned int scratch::Shader::getId() const {
     return _id;
+}
+
+const std::string &scratch::Shader::getName() const {
+    return _name;
 }
 
 

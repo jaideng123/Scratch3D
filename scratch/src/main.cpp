@@ -50,11 +50,19 @@ int main() {
     glfwSetKeyCallback(scratch::MainWindow, keyCallback);
     glfwSetMouseButtonCallback(scratch::MainWindow, mouseButtonCallback);
 
-    auto selectionShader = scratch::ScratchManagers->sceneManager->createShader(
+    std::cout << "Loading Shaders..." << std::endl;
+    auto selectionShader = scratch::ScratchManagers->shaderLibrary->addShader(
+            "EntitySelection",
             "./assets/shaders/entity-selection.vert",
             "./assets/shaders/entity-selection.frag");
+    auto unlitShader = scratch::ScratchManagers->shaderLibrary->addShader("Unlit",
+                                                                          "./assets/shaders/unlit.vert",
+                                                                          "./assets/shaders/unlit.frag");
+    auto litShader = scratch::ScratchManagers->shaderLibrary->addShader("Lit",
+                                                                        "./assets/shaders/lit.vert",
+                                                                        "./assets/shaders/lit.frag");
 
-//    loadDefaultScene();
+    loadDefaultScene();
     selectedSceneNodeId = 0;
 
     scratch::MainCamera = new scratch::Camera();
@@ -204,17 +212,11 @@ void handleInput() {
 }
 
 void loadDefaultScene() {
-    std::cout << "Loading Shaders..." << std::endl;
-    auto unlitShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/unlit.vert",
-                                                                            "./assets/shaders/unlit.frag");
-    auto litShader = scratch::ScratchManagers->sceneManager->createShader("./assets/shaders/lit.vert",
-                                                                          "./assets/shaders/lit.frag");
-
 
     std::cout << "Creating Stone Men..." << std::endl;
     for (int i = 0; i < 10; ++i) {
         auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-                "./assets/models/stone-man/Stone.obj", litShader);
+                "./assets/models/stone-man/Stone.obj");
         auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
         for (const auto &material : stoneManEntity->getRenderable()->getMaterials()) {
             material->setFloat("material.shininess", 32);
@@ -233,9 +235,9 @@ void loadDefaultScene() {
     std::cout << "Generated Hash:" << std::to_string(hash) << std::endl;
 
     std::cout << "Creating Suit men..." << std::endl;
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 2; ++i) {
         auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
-                "./assets/models/nanosuit/nanosuit.obj", litShader);
+                "./assets/models/nanosuit/nanosuit.obj");
         auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
         for (const auto &material : nanosuitEntity->getRenderable()->getMaterials()) {
             material->setFloat("material.shininess", 32);

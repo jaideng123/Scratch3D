@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <memory>
-#include "graphics/material.hpp"
+#include "graphics/material.h"
 
 namespace scratch {
 

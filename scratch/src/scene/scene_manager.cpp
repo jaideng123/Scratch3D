@@ -4,13 +4,9 @@
 
 #include <graphics/model_renderable.h>
 
-#include <utility>
 #include <graphics/render_system.h>
 #include <main.h>
-#include <include/rapidjson/prettywriter.h>
-#include "scene_manager.h"
 #include <fstream>
-#include <include/rapidjson/document.h>
 
 scratch::SceneManager::SceneManager() {
     _idFactory = scratch::IdFactory();
@@ -20,13 +16,12 @@ scratch::SceneManager::SceneManager() {
 }
 
 std::shared_ptr<scratch::Renderable>
-scratch::SceneManager::createModelRenderable(const std::string &modelPath,
-                                             const std::shared_ptr<Shader> &defaultShader) {
+scratch::SceneManager::createModelRenderable(const std::string &modelPath) {
     std::shared_ptr<scratch::Model> newModel = ScratchManagers->resourceManager->loadModel(modelPath);
-    for (auto material : newModel->getMaterials()) {
+    for (auto material : newModel->getDefaultMaterials()) {
         material->setId(_idFactory.generateId());
-        _materials.push_back(material);
     }
+    std::shared_ptr<scratch::Shader> defaultShader = ScratchManagers->shaderLibrary->findShader("Lit");
     newModel->setDefaultShader(defaultShader);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
             _idFactory.generateId(), newModel);
@@ -47,14 +42,6 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::createSceneNode(std::
     pNode->setEntity(entity);
     pNode->setId(_idFactory.generateId());
     return pNode;
-}
-
-std::shared_ptr<scratch::Shader>
-scratch::SceneManager::createShader(const std::string &vertexPath, const std::string &fragmentPath) {
-    std::shared_ptr<scratch::Shader> shader = std::make_shared<scratch::Shader>(_idFactory.generateId(), vertexPath,
-                                                                                fragmentPath);
-    _shaders.push_back(shader);
-    return shader;
 }
 
 
@@ -121,10 +108,6 @@ unsigned int scratch::SceneManager::handleSelection(scratch::Shader &selectionSh
     return selectedId;
 }
 
-const std::vector<std::shared_ptr<scratch::Shader>> &scratch::SceneManager::getShaders() const {
-    return _shaders;
-}
-
 scratch::SceneNode &scratch::SceneManager::getRootNode() {
     return _rootNode;
 }
@@ -138,22 +121,6 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     std::cout << "Serializing Id Factory" << std::endl;
     writer.String("lastGeneratedId");
     writer.Uint(_idFactory.getLastGeneratedId());
-
-    std::cout << "Serializing Shaders" << std::endl;
-    writer.String("shaders");
-    writer.StartArray();
-    for (auto &shader : _shaders) {
-        shader->serialize(writer);
-    }
-    writer.EndArray();
-
-    std::cout << "Serializing Materials" << std::endl;
-    writer.String("materials");
-    writer.StartArray();
-    for (auto &material : _materials) {
-        material->serialize(writer);
-    }
-    writer.EndArray();
 
     std::cout << "Serializing Renderables" << std::endl;
     writer.String("renderables");
@@ -194,7 +161,6 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
 
 }
 
-// TODO: Fix Scene Loading
 void scratch::SceneManager::loadScene(std::string scenePath) {
     std::ifstream sceneFile;
     sceneFile.open(scenePath);
@@ -209,32 +175,6 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     rapidjson::Value &lastGeneratedId = document["lastGeneratedId"];
     _idFactory.setLastGeneratedId(lastGeneratedId.GetUint());
 
-    std::cout << "Deserializing Shaders" << std::endl;
-    rapidjson::Value &shadersArray = document["shaders"].GetArray();
-    _shaders.clear();
-    for (rapidjson::Value::ConstValueIterator itr = shadersArray.Begin(); itr != shadersArray.End(); ++itr) {
-        std::shared_ptr<scratch::Shader> shader = std::make_shared<scratch::Shader>();
-        shader->deserialize(*itr);
-        _shaders.push_back(shader);
-    }
-
-    std::cout << "Deserializing Materials" << std::endl;
-    rapidjson::Value &materialsArray = document["materials"].GetArray();
-    _materials.clear();
-    for (rapidjson::Value::ConstValueIterator itr = materialsArray.Begin(); itr != materialsArray.End(); ++itr) {
-        auto material = std::make_shared<scratch::Material>();
-        material->deserialize(*itr);
-        unsigned int targetShaderId = (*itr)["shaderId"].GetUint();
-        std::shared_ptr<scratch::Shader> targetShader;
-        for (auto shader: _shaders) {
-            if (shader->getId() == targetShaderId) {
-                targetShader = shader;
-            }
-        }
-        material->setShader(targetShader);
-        _materials.push_back(material);
-    }
-
     std::cout << "Deserializing Renderables" << std::endl;
     rapidjson::Value &renderablesArray = document["renderables"].GetArray();
     _renderables.clear();
@@ -244,7 +184,14 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
             // TODO: figure out how to move this into a deserialize function
             std::string targetModelPath = (*itr)["modelPath"].GetString();
             std::shared_ptr<scratch::Model> linkedModel = ScratchManagers->resourceManager->loadModel(targetModelPath);
-            newRenderable = std::make_shared<scratch::ModelRenderable>((*itr)["id"].GetUint(), linkedModel);
+            std::vector<std::shared_ptr<scratch::Material>> materials = std::vector<std::shared_ptr<scratch::Material>>();
+            rapidjson::GenericArray<true, rapidjson::GenericValue<rapidjson::UTF8<>>::ValueType> materialsArray = (*itr)["materials"].GetArray();
+            for (rapidjson::Value::ConstValueIterator itrMaterials = materialsArray.Begin(); itrMaterials != materialsArray.End(); ++itrMaterials) {
+                std::shared_ptr<scratch::Material> newMaterial = std::make_shared<scratch::Material>();
+                newMaterial->deserialize(*itrMaterials);
+                materials.push_back(newMaterial);
+            }
+            newRenderable = std::make_shared<scratch::ModelRenderable>((*itr)["id"].GetUint(), linkedModel, materials);
         } else {
             throw std::runtime_error("Unexpected Renderable Type");
         }
