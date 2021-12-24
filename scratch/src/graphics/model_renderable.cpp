@@ -9,7 +9,7 @@
 
 const std::string scratch::ModelRenderable::TYPE = "MODEL";
 
-std::vector<scratch::Mesh> &scratch::ModelRenderable::getMeshes() {
+std::vector<std::shared_ptr<scratch::Mesh>> &scratch::ModelRenderable::getMeshes() {
     return _model->getMeshes();
 }
 

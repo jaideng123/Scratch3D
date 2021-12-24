@@ -14,6 +14,7 @@
 #include <utilities/assert.h>
 #include "main.h"
 
+std::vector<scratch::RenderItem> scratch::RenderSystem::_renderQueue;
 
 void GLAPIENTRY messageCallback(GLenum source,
                                 GLenum type,
@@ -113,17 +114,17 @@ void scratch::RenderSystem::setup() {
     ImGui_ImplOpenGL3_Init(glslVersion);
 }
 
-void scratch::RenderSystem::render(const std::vector<scratch::RenderItem> &renderQueue, scratch::DirectionalLight &directionalLight) {
+void scratch::RenderSystem::render(const scratch::Camera &camera, scratch::DirectionalLight &directionalLight) {
     // Background Fill Color
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 view = scratch::MainCamera->getViewMatrix();
-    glm::mat4 projection = scratch::MainCamera->getProjectionMatrix();
-    glm::vec3 viewPosition = scratch::MainCamera->getPosition();
+    glm::mat4 view = camera.getViewMatrix();
+    glm::mat4 projection = camera.getProjectionMatrix();
+    glm::vec3 viewPosition = camera.getPosition();
 
     std::optional<scratch::Material> currentMaterial = {};
-    for (auto renderItem : renderQueue) {
+    for (const auto &renderItem : _renderQueue) {
         currentMaterial = *renderItem.materialRef;
         currentMaterial.value().activate();
         currentMaterial.value().getShader()->setMat4("view", view);
@@ -133,7 +134,7 @@ void scratch::RenderSystem::render(const std::vector<scratch::RenderItem> &rende
 
         currentMaterial.value().getShader()->setMat4("model", renderItem.transform);
 
-        renderItem.mesh.draw();
+        renderItem.mesh->draw();
     }
 
     ImGui::Render();
@@ -150,9 +151,16 @@ void scratch::RenderSystem::startFrame() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGuizmo::BeginFrame();
+    _renderQueue.clear();
 }
 
 void scratch::RenderSystem::endFrame() {
     // Flip Buffers and Draw
     glfwSwapBuffers(scratch::MainWindow);
+}
+
+void scratch::RenderSystem::drawMesh(const std::shared_ptr<scratch::Mesh> &mesh,
+                                     const std::shared_ptr<scratch::Material> &materialRef,
+                                     const glm::mat4 &transform) {
+    _renderQueue.emplace_back(mesh, materialRef, transform);
 }

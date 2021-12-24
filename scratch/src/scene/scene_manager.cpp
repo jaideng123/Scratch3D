@@ -46,17 +46,15 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::createSceneNode(std::
 
 
 void scratch::SceneManager::render(const scratch::Camera &camera) {
-    std::vector<scratch::RenderItem> renderQueue = std::vector<scratch::RenderItem>();
     for (auto currentNode : _rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
-        std::vector<scratch::Mesh> meshesToRender = currentEntity->getRenderable()->getMeshes();
+        std::vector<std::shared_ptr<scratch::Mesh>> meshesToRender = currentEntity->getRenderable()->getMeshes();
         glm::mat4 transformMatrix = currentNode->generateTransformMatrix();
         for (auto &mesh : meshesToRender) {
-            scratch::RenderItem newRenderItem(mesh,mesh.getMaterial(),transformMatrix);
-            renderQueue.push_back(newRenderItem);
+            scratch::RenderSystem::drawMesh(mesh,mesh->getMaterial(),transformMatrix);
         }
     }
-    RenderSystem::render(renderQueue, *_directionalLight);
+    RenderSystem::render(camera, *_directionalLight);
 }
 
 std::shared_ptr<scratch::DirectionalLight> scratch::SceneManager::createDirectionalLight() {
@@ -83,7 +81,7 @@ unsigned int scratch::SceneManager::handleSelection(scratch::Shader &selectionSh
     glm::mat4 projection = scratch::MainCamera->getProjectionMatrix();
     for (auto currentNode : _rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
-        std::vector<scratch::Mesh> meshesToRender = currentEntity->getRenderable()->getMeshes();
+        std::vector<std::shared_ptr<scratch::Mesh>> meshesToRender = currentEntity->getRenderable()->getMeshes();
         glm::mat4 modelMatrix = currentNode->generateTransformMatrix();
         for (auto &mesh : meshesToRender) {
             selectionShader.use();
@@ -91,7 +89,7 @@ unsigned int scratch::SceneManager::handleSelection(scratch::Shader &selectionSh
             selectionShader.setMat4("view", view);
             selectionShader.setMat4("projection", projection);
             selectionShader.setUnsignedInt("entityId", currentNode->getId());
-            mesh.draw();
+            mesh->draw();
         }
     }
     GLubyte pixel[3];

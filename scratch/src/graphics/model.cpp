@@ -24,7 +24,7 @@ scratch::Model::Model(unsigned int id, const std::string &path) {
     loadModel(path);
 }
 
-std::vector<scratch::Mesh> &scratch::Model::getMeshes() {
+std::vector<std::shared_ptr<scratch::Mesh>> &scratch::Model::getMeshes() {
     return _meshes;
 }
 
@@ -53,7 +53,8 @@ void scratch::Model::processNode(aiNode *node, const aiScene *scene) {
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh convertedMesh = processMesh(mesh, scene);
-        _meshes.push_back(convertedMesh);
+
+        _meshes.push_back(std::make_shared<scratch::Mesh>(convertedMesh));
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++) {

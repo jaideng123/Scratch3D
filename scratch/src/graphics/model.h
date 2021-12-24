@@ -23,7 +23,7 @@ namespace scratch {
 
         unsigned int getId() const;
 
-        std::vector<scratch::Mesh> &getMeshes();
+        std::vector<std::shared_ptr<scratch::Mesh>> &getMeshes();
 
         const std::string &getModelPath() const;
 
@@ -39,7 +39,7 @@ namespace scratch {
         unsigned int _id;
 
         /*  Model Data  */
-        std::vector<Mesh> _meshes;
+        std::vector<std::shared_ptr<scratch::Mesh>> _meshes;
         std::vector<std::shared_ptr<Material>> _defaultMaterials;
         std::string _directory;
         std::string _modelPath;

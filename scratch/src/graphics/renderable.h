@@ -12,7 +12,7 @@ namespace scratch {
     protected:
         unsigned int _id;
     public:
-        virtual std::vector<scratch::Mesh> &getMeshes() = 0;
+        virtual std::vector<std::shared_ptr<scratch::Mesh>> &getMeshes() = 0;
 
         virtual std::string getType() = 0;
 

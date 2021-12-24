@@ -21,7 +21,7 @@ glm::mat4 scratch::Camera::getProjectionMatrix() const {
     return glm::perspective<double>(glm::radians(_fieldOfView), aspectRatio, _nearPlane, _farPlane);
 }
 
-const glm::vec3 &scratch::Camera::getPosition() {
+const glm::vec3 & scratch::Camera::getPosition() const {
     return _position;
 }
 

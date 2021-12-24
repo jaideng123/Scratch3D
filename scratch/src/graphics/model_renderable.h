@@ -15,7 +15,7 @@ namespace scratch {
 
         ModelRenderable();
 
-        std::vector<scratch::Mesh> &getMeshes() override;
+        std::vector<std::shared_ptr<scratch::Mesh>> &getMeshes() override;
 
         static const std::string TYPE;
 
