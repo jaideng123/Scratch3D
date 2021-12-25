@@ -108,7 +108,7 @@ void scratch::RenderSystem::setup() {
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    // Setup Platform/Renderer backends
+    // Setup ImGui Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(scratch::MainWindow, true);
     const char *glslVersion = "#version 400 core";
     ImGui_ImplOpenGL3_Init(glslVersion);
@@ -125,12 +125,14 @@ void scratch::RenderSystem::render(const scratch::Camera &camera, scratch::Direc
 
     std::optional<scratch::Material> currentMaterial = {};
     for (const auto &renderItem : _renderQueue) {
-        currentMaterial = *renderItem.materialRef;
-        currentMaterial.value().activate();
-        currentMaterial.value().getShader()->setMat4("view", view);
-        currentMaterial.value().getShader()->setMat4("projection", projection);
-        currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
-        directionalLight.applyToShader(*currentMaterial.value().getShader());
+        if(!currentMaterial.has_value() || currentMaterial.value().getId() != renderItem.materialRef->getId()) {
+            currentMaterial = *renderItem.materialRef;
+            currentMaterial.value().activate();
+            currentMaterial.value().getShader()->setMat4("view", view);
+            currentMaterial.value().getShader()->setMat4("projection", projection);
+            currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
+            directionalLight.applyToShader(*currentMaterial.value().getShader());
+        }
 
         currentMaterial.value().getShader()->setMat4("model", renderItem.transform);
 
