@@ -46,10 +46,11 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::createSceneNode(std::
 void scratch::SceneManager::render(const scratch::Camera &camera) {
     for (auto currentNode : _rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
-        std::vector<std::shared_ptr<scratch::Mesh>> meshesToRender = currentEntity->getRenderable()->getMeshes();
+        std::vector<std::shared_ptr<scratch::Mesh>> meshes = currentEntity->getRenderable()->getMeshes();
+        std::vector<std::shared_ptr<scratch::Material>> materials = currentEntity->getRenderable()->getMaterials();
         glm::mat4 transformMatrix = currentNode->generateTransformMatrix();
-        for (auto &mesh : meshesToRender) {
-            scratch::RenderSystem::drawMesh(mesh,mesh->getMaterial(),transformMatrix);
+        for (int i = 0; i < meshes.size(); ++i) {
+            scratch::RenderSystem::drawMesh(meshes[i],materials[meshes[i]->getMaterialIndex()],transformMatrix);
         }
     }
     RenderSystem::render(camera, *_directionalLight);
