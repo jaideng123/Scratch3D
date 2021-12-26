@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <utilities/assert.h>
 
 #ifdef __MINGW32__
 #define _strtoull_l _strtoul_l
@@ -143,8 +144,7 @@ bool scratch::StringConverter::parsebool(const std::string &val) {
               scratch::StringConverter::startsWith(val, "0") || scratch::StringConverter::startsWith(val, "off")))
         return false;
     else
-        return false;
-    // TODO: throw error here
+        SCRATCH_ASSERT_NEVER("Invalid Bool value");
 }
 
 //-----------------------------------------------------------------------
@@ -155,9 +155,9 @@ glm::vec2 scratch::StringConverter::parsevec2(const std::string &val) {
     for (size_t i = 0; i < vec.size(); i++) {
         floatVec.push_back(scratch::StringConverter::parsefloat(vec[i]));
     }
-    // TODO: throw error
-    // if (vec.size() != n)
-    //     return false;
+     if (vec.size() != 2) {
+         SCRATCH_ASSERT_NEVER("Invalid Vector Size");
+     }
     return glm::vec2(floatVec[0], floatVec[1]);
 }
 
@@ -170,9 +170,9 @@ glm::vec3 scratch::StringConverter::parsevec3(const std::string &val) {
         floatVec.push_back(scratch::StringConverter::parsefloat(vec[i]));
     }
 
-    // TODO: throw error
-    // if (vec.size() != n)
-    //     return false;
+    if (vec.size() != 3) {
+        SCRATCH_ASSERT_NEVER("Invalid Vector Size, should be 3");
+    }
     return glm::vec3(floatVec[0], floatVec[1], floatVec[2]);
 }
 
@@ -184,9 +184,9 @@ glm::vec4 scratch::StringConverter::parsevec4(const std::string &val) {
     for (size_t i = 0; i < vec.size(); i++) {
         floatVec.push_back(scratch::StringConverter::parsefloat(vec[i]));
     }
-    // TODO: throw error
-    // if (vec.size() != n)
-    //     return false;
+    if (vec.size() != 4) {
+        SCRATCH_ASSERT_NEVER("Invalid Vector Size");
+    }
     return glm::vec4(floatVec[0], floatVec[1], floatVec[2], floatVec[3]);
 }
 
@@ -198,9 +198,9 @@ glm::mat3 scratch::StringConverter::parsemat3(const std::string &val) {
     for (size_t i = 0; i < vec.size(); i++) {
         floatVec.push_back(scratch::StringConverter::parsefloat(vec[i]));
     }
-    // TODO: throw error
-    // if (vec.size() != n)
-    //     return false;
+    if (vec.size() != 9) {
+        SCRATCH_ASSERT_NEVER("Invalid Vector Size");
+    }
     return glm::mat3(floatVec[0], floatVec[1], floatVec[2],
                      floatVec[3], floatVec[4], floatVec[5],
                      floatVec[6], floatVec[7], floatVec[8]);
@@ -214,9 +214,9 @@ glm::mat4 scratch::StringConverter::parsemat4(const std::string &val) {
     for (size_t i = 0; i < vec.size(); i++) {
         floatVec.push_back(scratch::StringConverter::parsefloat(vec[i]));
     }
-    // TODO: throw error
-    // if (vec.size() != n)
-    //     return false;
+    if (vec.size() != 16) {
+        SCRATCH_ASSERT_NEVER("Invalid Vector Size");
+    }
     return glm::make_mat4(floatVec.data());
 }
 

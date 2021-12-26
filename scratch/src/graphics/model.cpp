@@ -40,7 +40,6 @@ void scratch::Model::loadModel(const std::string &path) {
     }
     // We assume that all textures are in the same directory as the scene
     _directory = path.substr(0, path.find_last_of('/'));
-
     for (size_t i = 0; i < scene->mNumMaterials; ++i) {
         _defaultMaterials.push_back(transformMaterial(scene->mMaterials[i]));
     }
@@ -62,6 +61,7 @@ void scratch::Model::processNode(aiNode *node, const aiScene *scene) {
     }
 }
 
+// TODO, load each material via resource manager
 std::shared_ptr<scratch::Material> scratch::Model::transformMaterial(aiMaterial *assimpMaterial) {
     auto material = std::make_shared<Material>();
     // we assume a convention for sampler names in the shaders. Each diffuse texture should be named

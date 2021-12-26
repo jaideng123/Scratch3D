@@ -289,3 +289,19 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
 void scratch::Material::addTexture(const std::string path, const std::string typeName) {
     _textures.push_back(ScratchManagers->resourceManager->loadTexture(path,typeName));
 }
+
+const std::string &scratch::Material::getPath() const {
+    return _path;
+}
+
+void scratch::Material::setPath(const std::string &path) {
+    _path = path;
+}
+
+int scratch::Material::getIndex() const {
+    return _index;
+}
+
+void scratch::Material::setIndex(int index) {
+    _index = index;
+}

@@ -21,8 +21,6 @@ scratch::SceneManager::createModelRenderable(const std::string &modelPath) {
     for (auto material : newModel->getDefaultMaterials()) {
         material->setId(_idFactory.generateId());
     }
-    std::shared_ptr<scratch::Shader> defaultShader = ScratchManagers->shaderLibrary->findShader("Lit");
-    newModel->setDefaultShader(defaultShader);
     std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
             _idFactory.generateId(), newModel);
     _renderables.push_back(pRenderable);
@@ -71,8 +69,7 @@ std::shared_ptr<scratch::SceneNode> scratch::SceneManager::findSceneNode(unsigne
     return nullptr;
 }
 
-//TODO: Render to separate frame buffer
-//TODO: break this off
+//TODO: break this off & Render to separate frame buffer
 unsigned int scratch::SceneManager::handleSelection(scratch::Shader &selectionShader, glm::vec2 mousePosition) {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0, 0, 0, 1.0f);
@@ -179,7 +176,7 @@ void scratch::SceneManager::loadScene(std::string scenePath) {
     for (rapidjson::Value::ConstValueIterator itr = renderablesArray.Begin(); itr != renderablesArray.End(); ++itr) {
         std::shared_ptr<scratch::Renderable> newRenderable;
         if ((*itr)["type"].GetString() == scratch::ModelRenderable::TYPE) {
-            // TODO: figure out how to move this into a deserialize function
+            // TODO: Move this into a deserialize function
             std::string targetModelPath = (*itr)["modelPath"].GetString();
             std::shared_ptr<scratch::Model> linkedModel = ScratchManagers->resourceManager->loadModel(targetModelPath);
             std::vector<std::shared_ptr<scratch::Material>> materials = std::vector<std::shared_ptr<scratch::Material>>();

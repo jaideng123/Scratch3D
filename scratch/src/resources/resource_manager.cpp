@@ -2,6 +2,7 @@
 // Created by JJJai on 12/17/2021.
 //
 
+#include <main.h>
 #include "resource_manager.h"
 
 std::shared_ptr<scratch::Model> scratch::ResourceManager::loadModel(const std::string &path) {
@@ -13,6 +14,9 @@ std::shared_ptr<scratch::Model> scratch::ResourceManager::loadModel(const std::s
         return loadedModels[hash];
     }
     std::shared_ptr<scratch::Model> newModel = std::make_shared<scratch::Model>(hash, path);
+    // This will break if there s no "Lit" shader, should probably add the concept to shader library
+    std::shared_ptr<scratch::Shader> defaultShader = ScratchManagers->shaderLibrary->findShader("Lit");
+    newModel->setDefaultShader(defaultShader);
     loadedModels.insert({hash,newModel});
     return newModel;
 }

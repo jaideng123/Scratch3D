@@ -56,6 +56,9 @@ namespace scratch {
     class Material {
     private:
         unsigned int _id;
+        // TODO: use these
+        std::string _path;
+        int _index;
         std::vector<std::shared_ptr<Texture>> _textures;
         std::shared_ptr<scratch::Shader> _shader;
         std::map<std::string, scratch::Parameter> _parameters;
@@ -76,6 +79,14 @@ namespace scratch {
         unsigned int getId() const;
 
         void setId(unsigned int id);
+
+        const std::string &getPath() const;
+
+        void setPath(const std::string &path);
+
+        int getIndex() const;
+
+        void setIndex(int index);
 
         const std::map<std::string, scratch::Parameter> &getParameters() const;
 

@@ -164,5 +164,6 @@ void scratch::RenderSystem::endFrame() {
 void scratch::RenderSystem::drawMesh(const std::shared_ptr<scratch::Mesh> &mesh,
                                      const std::shared_ptr<scratch::Material> &materialRef,
                                      const glm::mat4 &transform) {
+    // PERF: Sort by material
     _renderQueue.emplace_back(mesh, materialRef, transform);
 }
