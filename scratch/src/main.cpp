@@ -69,7 +69,7 @@ int main() {
 
     auto transformGizmo = scratch::TransformGizmo(scratch::MainCamera);
 
-    auto sceneHeirarchyGizmo = scratch::SceneHeirarchy(scratch::ScratchManagers->sceneManager->getRootNode());
+    auto sceneHeirarchyGizmo = scratch::SceneHeirarchy(scratch::ScratchManagers->sceneManager->activeScene.rootNode);
 
     auto materialPropsWidget = scratch::MaterialPropsWidget();
 
@@ -86,7 +86,7 @@ int main() {
 
         scratch::RenderSystem::startFrame();
 
-        auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->findSceneNode(
+        auto selectedNode = selectedSceneNodeId == 0 ? nullptr : scratch::ScratchManagers->sceneManager->activeScene.findSceneNode(
                 selectedSceneNodeId);
         if (selectedNode != nullptr) {
             ImGui::SetNextWindowPos(ImVec2(0, 250.0f), ImGuiCond_Once);
@@ -108,12 +108,12 @@ int main() {
             ImGui::End();
         }
 
-        sceneHeirarchyGizmo.setRootNode(scratch::ScratchManagers->sceneManager->getRootNode());
+        sceneHeirarchyGizmo.setRootNode(scratch::ScratchManagers->sceneManager->activeScene.rootNode);
         sceneHeirarchyGizmo.setSelectedNode(selectedNode);
-        if (scratch::ScratchManagers->sceneManager->getCurrentSceneFilePath().empty()) {
+        if (scratch::ScratchManagers->sceneManager->activeScene.getFilePath().empty()) {
             sceneHeirarchyGizmo.setSceneName("New Scene");
         } else {
-            std::string currentScenePath = scratch::ScratchManagers->sceneManager->getCurrentSceneFilePath();
+            std::string currentScenePath = scratch::ScratchManagers->sceneManager->activeScene.getFilePath();
             std::filesystem::path actualPath = std::filesystem::path(currentScenePath);
             sceneHeirarchyGizmo.setSceneName(actualPath.filename().string());
         }
@@ -130,7 +130,7 @@ int main() {
 
         mainMenuBar.render();
 
-        scratch::ScratchManagers->sceneManager->render(*scratch::MainCamera);
+        scratch::ScratchManagers->sceneManager->activeScene.render(*scratch::MainCamera);
 
         scratch::RenderSystem::endFrame();
     }
@@ -215,17 +215,18 @@ void loadDefaultScene() {
 
     std::cout << "Creating Stone Men..." << std::endl;
     for (int i = 0; i < 10; ++i) {
-        auto stoneManModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+        auto stoneManModel = scratch::ScratchManagers->sceneManager
+                ->activeScene.createModelRenderable(
                 "./assets/models/stone-man/Stone.obj");
-        auto stoneManEntity = scratch::ScratchManagers->sceneManager->createEntity(stoneManModel);
+        auto stoneManEntity = scratch::ScratchManagers->sceneManager->activeScene.createEntity(stoneManModel);
         for (const auto &material : stoneManEntity->getRenderable()->getMaterials()) {
             material->setFloat("material.shininess", 32);
         }
-        auto stoneManNode = scratch::ScratchManagers->sceneManager->createSceneNode(stoneManEntity);
+        auto stoneManNode = scratch::ScratchManagers->sceneManager->activeScene.createSceneNode(stoneManEntity);
         stoneManNode->setName("Stone Man - " + std::to_string(i));
         stoneManNode->setPosition(glm::vec3(i * .5, 0, 0));
         stoneManNode->setScale(glm::vec3(0.2f));
-        scratch::ScratchManagers->sceneManager->getRootNode().addChild(stoneManNode);
+        scratch::ScratchManagers->sceneManager->activeScene.rootNode.addChild(stoneManNode);
         std::cout << "Created: " << stoneManNode->getName() << std::endl;
 
     }
@@ -236,23 +237,16 @@ void loadDefaultScene() {
 
     std::cout << "Creating Suit men..." << std::endl;
     for (int i = 0; i < 2; ++i) {
-        auto nanoSuitModel = scratch::ScratchManagers->sceneManager->createModelRenderable(
+        auto nanoSuitModel = scratch::ScratchManagers->sceneManager->activeScene.createModelRenderable(
                 "./assets/models/nanosuit/nanosuit.obj");
-        auto nanosuitEntity = scratch::ScratchManagers->sceneManager->createEntity(nanoSuitModel);
+        auto nanosuitEntity = scratch::ScratchManagers->sceneManager->activeScene.createEntity(nanoSuitModel);
         for (const auto &material : nanosuitEntity->getRenderable()->getMaterials()) {
             material->setFloat("material.shininess", 32);
         }
-        auto nanosuitNode = scratch::ScratchManagers->sceneManager->createSceneNode(nanosuitEntity);
+        auto nanosuitNode = scratch::ScratchManagers->sceneManager->activeScene.createSceneNode(nanosuitEntity);
         nanosuitNode->setName("Nano suit - " + std::to_string(i));
         nanosuitNode->setPosition(glm::vec3(-2 + i * .1, 0, 0));
         nanosuitNode->setScale(glm::vec3(0.2f));
-        scratch::ScratchManagers->sceneManager->getRootNode().addChild(nanosuitNode);
+        scratch::ScratchManagers->sceneManager->activeScene.rootNode.addChild(nanosuitNode);
     }
-
-
-    auto directionalLight = scratch::ScratchManagers->sceneManager->createDirectionalLight();
-    directionalLight->setDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
-    directionalLight->setAmbient(scratch::Color(glm::vec3(0.2f)));
-    directionalLight->setDiffuse(scratch::Color(glm::vec3(0.5f)));
-    directionalLight->setSpecular(scratch::WHITE);
 }

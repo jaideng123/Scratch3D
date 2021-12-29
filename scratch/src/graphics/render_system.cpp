@@ -114,7 +114,7 @@ void scratch::RenderSystem::setup() {
     ImGui_ImplOpenGL3_Init(glslVersion);
 }
 
-void scratch::RenderSystem::render(const scratch::Camera &camera, scratch::DirectionalLight &directionalLight) {
+void scratch::RenderSystem::render(const scratch::Camera &camera, DirectionalLight directionalLight) {
     // Background Fill Color
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

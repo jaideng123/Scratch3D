@@ -23,7 +23,7 @@ namespace scratch {
 
         static void startFrame();
 
-        static void render(const scratch::Camera &camera, scratch::DirectionalLight &directionalLight);
+        static void render(const scratch::Camera &camera, DirectionalLight directionalLight);
 
         static void drawMesh(const std::shared_ptr<scratch::Mesh> &mesh,
                              const std::shared_ptr<scratch::Material> &materialRef,

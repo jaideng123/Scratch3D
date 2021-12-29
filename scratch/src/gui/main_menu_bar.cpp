@@ -82,10 +82,10 @@ void scratch::MainMenuBar::openSceneDialog() const {
 
 void scratch::MainMenuBar::saveCurrentScene() const {
     ScratchManagers->sceneManager->saveScene(
-            ScratchManagers->sceneManager->getCurrentSceneFilePath());
+            ScratchManagers->sceneManager->activeScene.getFilePath());
 }
 
 void scratch::MainMenuBar::reloadCurrentScene() const {
     ScratchManagers->sceneManager->loadScene(
-            ScratchManagers->sceneManager->getCurrentSceneFilePath());
+            ScratchManagers->sceneManager->activeScene.getFilePath());
 }
