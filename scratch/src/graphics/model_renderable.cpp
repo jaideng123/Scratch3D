@@ -42,9 +42,11 @@ scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scrat
                                                                                                                     model->getDefaultMaterials()) {}
 
 scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
-                                          std::vector<std::shared_ptr<scratch::Material>> materials) : _model(model),
-                                                                                                       _materials(
-                                                                                                               materials) {
+                                          std::vector<std::shared_ptr<scratch::Material>> materials) : _model(model) {
+    _materials.clear();
+    for (const auto& material: model->getDefaultMaterials()) {
+        _materials.emplace_back(std::make_shared<scratch::Material>(*material));
+    }
     this->_id = id;
 }
 
