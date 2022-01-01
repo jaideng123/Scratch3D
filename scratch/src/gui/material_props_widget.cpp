@@ -13,7 +13,7 @@ void scratch::MaterialPropsWidget::render() {
         paramTypes.push_back(param.first);
     }
     for (const auto &material : _materials) {
-        std::string materialName = "Material " + std::to_string(material->getId());
+        std::string materialName = material->getName();
         if (ImGui::TreeNodeEx(materialName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
             auto parameters = material->getParameters();
             int i = 0;

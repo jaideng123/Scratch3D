@@ -9,7 +9,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "graphics/mesh.hpp"
+#include "graphics/mesh.h"
 #include "graphics/material.h"
 #include <include/rapidjson/document.h>
 

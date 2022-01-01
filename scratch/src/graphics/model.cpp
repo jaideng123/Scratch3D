@@ -8,13 +8,6 @@
 
 #include "model.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-
-#include <stb_image.h>
-
-unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma = false);
-
-unsigned int textureFromFile(const std::string &path, const std::string &directory, bool gamma, int wrapMode);
 
 glm::vec3 convertVector3(aiVector3D aiVec3);
 
@@ -41,7 +34,9 @@ void scratch::Model::loadModel(const std::string &path) {
     // We assume that all textures are in the same directory as the scene
     _directory = path.substr(0, path.find_last_of('/'));
     for (size_t i = 0; i < scene->mNumMaterials; ++i) {
-        _defaultMaterials.push_back(transformMaterial(scene->mMaterials[i]));
+        if (std::string(scene->mMaterials[i]->GetName().data) != AI_DEFAULT_MATERIAL_NAME) {
+            _defaultMaterials.push_back(transformMaterial(scene->mMaterials[i]));
+        }
     }
 
     processNode(scene->mRootNode, scene);
@@ -78,6 +73,8 @@ std::shared_ptr<scratch::Material> scratch::Model::transformMaterial(aiMaterial 
     attachMaterialTextures(material, assimpMaterial, aiTextureType_HEIGHT, "texture_normal");
     // 4. height maps
     attachMaterialTextures(material, assimpMaterial, aiTextureType_AMBIENT, "texture_height");
+
+    material->setName(std::string(assimpMaterial->GetName().data, assimpMaterial->GetName().length));
 
     return material;
 }
@@ -133,8 +130,12 @@ scratch::Mesh scratch::Model::processMesh(aiMesh *mesh, const aiScene *scene) {
             indices.push_back(face.mIndices[j]);
     }
 
+    // material index 0 is the default material which we don't use
+    std::shared_ptr<Material> material =
+            mesh->mMaterialIndex > 0 ? _defaultMaterials[mesh->mMaterialIndex - 1] : nullptr;
+
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, _defaultMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
+    return Mesh(vertices, indices, material, mesh->mMaterialIndex - 1);
 }
 
 const std::string &scratch::Model::getModelPath() const {

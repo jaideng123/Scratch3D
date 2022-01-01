@@ -5,7 +5,7 @@
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
 #include <include/rapidjson/document.h>
-#include "mesh.hpp"
+#include "mesh.h"
 
 namespace scratch {
     class Renderable {

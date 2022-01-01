@@ -4,7 +4,7 @@
 
 #include <utility>
 #include "lights/directional_light.h"
-#include "mesh.hpp"
+#include "mesh.h"
 
 namespace scratch {
     struct RenderItem {

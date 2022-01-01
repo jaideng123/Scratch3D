@@ -5,7 +5,7 @@
 #include <vector>
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
-#include "entity/entity.hpp"
+#include "entity/entity.h"
 
 namespace scratch {
 

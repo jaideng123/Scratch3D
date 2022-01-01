@@ -305,3 +305,11 @@ int scratch::Material::getIndex() const {
 void scratch::Material::setIndex(int index) {
     _index = index;
 }
+
+const std::string &scratch::Material::getName() const {
+    return _name;
+}
+
+void scratch::Material::setName(const std::string &name) {
+    _name = name;
+}

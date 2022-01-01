@@ -57,6 +57,7 @@ namespace scratch {
     private:
         unsigned int _id;
         // TODO: use these
+        std::string _name;
         std::string _path;
         int _index;
         std::vector<std::shared_ptr<Texture>> _textures;
@@ -79,6 +80,10 @@ namespace scratch {
         unsigned int getId() const;
 
         void setId(unsigned int id);
+
+        const std::string &getName() const;
+
+        void setName(const std::string &name);
 
         const std::string &getPath() const;
 

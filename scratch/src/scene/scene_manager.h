@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <entity/entity.hpp>
+#include <entity/entity.h>
 #include <entity/id_factory.h>
 #include <lights/directional_light.h>
 #include <graphics/renderable.h>

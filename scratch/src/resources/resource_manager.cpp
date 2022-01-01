@@ -4,6 +4,9 @@
 
 #include <main.h>
 #include "resource_manager.h"
+#define STB_IMAGE_IMPLEMENTATION
+
+#include <stb_image.h>
 
 std::shared_ptr<scratch::Model> scratch::ResourceManager::loadModel(const std::string &path) {
     std::cout << "Loading Model: " << path << std::endl;
