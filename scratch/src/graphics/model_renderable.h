@@ -10,8 +10,10 @@ namespace scratch { class Mesh; }
 namespace scratch {
     class ModelRenderable : public scratch::Renderable {
     public:
-        ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model);
-        ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,std::vector<std::shared_ptr<scratch::Material>> materials );
+        ModelRenderable(unsigned int id, const std::shared_ptr<scratch::Model>& model);
+
+        ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
+                        const std::vector<std::shared_ptr<scratch::Material>> &materials);
 
         ModelRenderable();
 

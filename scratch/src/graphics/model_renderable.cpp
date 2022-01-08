@@ -37,14 +37,14 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.EndObject();
 }
 
-scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model) : ModelRenderable(id,
+scratch::ModelRenderable::ModelRenderable(unsigned int id, const std::shared_ptr<scratch::Model>& model) : ModelRenderable(id,
                                                                                                                     model,
                                                                                                                     model->getDefaultMaterials()) {}
 
 scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
-                                          std::vector<std::shared_ptr<scratch::Material>> materials) : _model(model) {
+                                          const std::vector<std::shared_ptr<scratch::Material>>& materials) : _model(std::move(model)) {
     _materials.clear();
-    for (const auto& material: model->getDefaultMaterials()) {
+    for (const auto& material: materials) {
         _materials.emplace_back(std::make_shared<scratch::Material>(*material));
     }
     this->_id = id;
