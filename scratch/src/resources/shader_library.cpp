@@ -36,3 +36,12 @@ void scratch::ShaderLibrary::reloadAllShaders() {
         pair.second->reload();
     }
 }
+
+const std::vector<std::string> scratch::ShaderLibrary::getLoadedShaderNames() const {
+    std::vector<std::string> shaders;
+    shaders.reserve(loadedShaders.size());
+    for(const auto& kv : loadedShaders){
+        shaders.push_back(kv.second->getName());
+    }
+    return shaders;
+}

@@ -17,6 +17,8 @@ namespace scratch {
 
         std::string renderPropertyName(const std::shared_ptr<Material> &material,
                                        const std::string &propertyName, size_t propertyIndex) const;
+
+        void renderProperties(const std::shared_ptr<Material> &material) const;
     };
 
 }
