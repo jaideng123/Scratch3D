@@ -25,11 +25,11 @@ void scratch::Material::activate() {
     setupStateParameters();
 }
 
-void scratch::Material::setShader(std::shared_ptr <scratch::Shader> shader) {
+void scratch::Material::setShader(std::shared_ptr<scratch::Shader> shader) {
     _shader = shader;
 }
 
-std::shared_ptr <scratch::Shader> scratch::Material::getShader() {
+std::shared_ptr<scratch::Shader> scratch::Material::getShader() {
     return _shader;
 }
 
@@ -41,11 +41,11 @@ void scratch::Material::setId(unsigned int id) {
     _id = id;
 }
 
-const std::map <std::string, scratch::Parameter> &scratch::Material::getParameters() const {
+const std::map<std::string, scratch::Parameter> &scratch::Material::getParameters() const {
     return _parameters;
 }
 
-void scratch::Material::setParameters(const std::map <std::string, scratch::Parameter> &parameters) {
+void scratch::Material::setParameters(const std::map<std::string, scratch::Parameter> &parameters) {
     _parameters = parameters;
 }
 
@@ -126,22 +126,22 @@ void scratch::Material::setupStateParameters() {
     for (auto const &[key, val] : _parameters) {
         switch (val.type) {
             case BOOL:
-                _shader->setBool(key, std::any_cast<bool>(val.value));
+                _shader->setBool(key, std::get<bool>(val.value));
                 break;
             case INT:
-                _shader->setInt(key, std::any_cast<int>(val.value));
+                _shader->setInt(key, std::get<int>(val.value));
                 break;
             case FLOAT:
-                _shader->setFloat(key, std::any_cast<float>(val.value));
+                _shader->setFloat(key, std::get<float>(val.value));
                 break;
             case VECTOR3:
-                _shader->setVec3(key, std::any_cast<glm::vec3>(val.value));
+                _shader->setVec3(key, std::get<glm::vec3>(val.value));
                 break;
             case MATRIX4:
-                _shader->setMat4(key, std::any_cast<glm::mat4>(val.value));
+                _shader->setMat4(key, std::get<glm::mat4>(val.value));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
@@ -166,13 +166,13 @@ void scratch::Material::clearParameters() {
                 _shader->setMat4(key, glm::mat4(1));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
 }
 
-void scratch::Material::serialize(rapidjson::PrettyWriter <rapidjson::StringBuffer> &writer) {
+void scratch::Material::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
     writer.String("id");
@@ -211,22 +211,22 @@ void scratch::Material::serialize(rapidjson::PrettyWriter <rapidjson::StringBuff
         std::string serializedValue = "";
         switch (param.second.type) {
             case BOOL:
-                serializedValue = scratch::StringConverter::toString(std::any_cast<bool>(param.second.value));
+                serializedValue = scratch::StringConverter::toString(std::get<bool>(param.second.value));
                 break;
             case INT:
-                serializedValue = scratch::StringConverter::toString(std::any_cast<int>(param.second.value));
+                serializedValue = scratch::StringConverter::toString(std::get<int>(param.second.value));
                 break;
             case FLOAT:
-                serializedValue = scratch::StringConverter::toString(std::any_cast<float>(param.second.value));
+                serializedValue = scratch::StringConverter::toString(std::get<float>(param.second.value));
                 break;
             case VECTOR3:
-                serializedValue = scratch::StringConverter::toString(std::any_cast<glm::vec3>(param.second.value));
+                serializedValue = scratch::StringConverter::toString(std::get<glm::vec3>(param.second.value));
                 break;
             case MATRIX4:
-                serializedValue = scratch::StringConverter::toString(std::any_cast<glm::mat4>(param.second.value));
+                serializedValue = scratch::StringConverter::toString(std::get<glm::mat4>(param.second.value));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         writer.String(serializedValue.c_str(),
@@ -278,7 +278,7 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
                 param.value = scratch::StringConverter::parsemat4(rawValue);
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         _parameters[key] = param;
@@ -287,7 +287,7 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
 }
 
 void scratch::Material::addTexture(const std::string path, const std::string typeName) {
-    _textures.push_back(ScratchManagers->resourceManager->loadTexture(path,typeName));
+    _textures.push_back(ScratchManagers->resourceManager->loadTexture(path, typeName));
 }
 
 const std::string &scratch::Material::getPath() const {

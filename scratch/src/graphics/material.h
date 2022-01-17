@@ -17,7 +17,7 @@
 #include <include/rapidjson/prettywriter.h>
 #include <include/rapidjson/document.h>
 #include <utilities/assert.h>
-#include <any>
+#include <variant>
 
 #include "converter/string_converter.h"
 #include "shader.h"
@@ -27,7 +27,7 @@ namespace scratch {
         unsigned int id;
         std::string type;
         std::string path;
-        unsigned char * data;
+        unsigned char *data;
     };
 
     enum ParameterType {
@@ -49,7 +49,7 @@ namespace scratch {
                                                                     {"MATRIX4", MATRIX4}};
 
     struct Parameter {
-        std::any value;
+        std::variant<bool, int, float, glm::vec3, glm::mat4> value;
         scratch::ParameterType type;
     };
 

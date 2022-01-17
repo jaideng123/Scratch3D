@@ -44,7 +44,7 @@ void scratch::MaterialPropsWidget::renderProperties(const std::shared_ptr<Materi
         ImGui::PushItemWidth(150);
         switch (propertyValue.type) {
             case BOOL: {
-                bool originalValue = std::any_cast<bool>(propertyValue.value);
+                bool originalValue = std::get<bool>(propertyValue.value);
                 bool currentValue = originalValue;
                 ImGui::Checkbox(inputValueId.c_str(), &currentValue);
                 if (currentValue != originalValue) {
@@ -53,7 +53,7 @@ void scratch::MaterialPropsWidget::renderProperties(const std::shared_ptr<Materi
             }
                 break;
             case FLOAT: {
-                float originalValue = std::any_cast<float>(propertyValue.value);
+                float originalValue = std::get<float>(propertyValue.value);
                 float currentValue = originalValue;
                 ImGui::InputFloat(inputValueId.c_str(), &currentValue);
                 if (currentValue != originalValue) {
@@ -62,7 +62,7 @@ void scratch::MaterialPropsWidget::renderProperties(const std::shared_ptr<Materi
             }
                 break;
             case VECTOR3: {
-                glm::vec3 originalValue = std::any_cast<glm::vec3>(propertyValue.value);
+                glm::vec3 originalValue = std::get<glm::vec3>(propertyValue.value);
                 glm::vec3 currentValue = originalValue;
                 ImGui::InputFloat3(inputValueId.c_str(), glm::value_ptr(currentValue));
                 if (currentValue != originalValue) {
