@@ -4,20 +4,17 @@
 #include <main.h>
 #include "material.h"
 
-scratch::Material::Material(unsigned int id, std::vector<std::shared_ptr<Texture>> textures) {
-    _id = id;
-    _textures = std::move(textures);
+scratch::Material::Material(unsigned int id, std::vector<std::shared_ptr<Texture>> textures) : _id(id), _index(-1),
+                                                                                               _textures(std::move(
+                                                                                                       textures)) {
 }
 
-scratch::Material::Material(std::vector<std::shared_ptr<Texture>> textures) {
-    _id = 0;
-    _textures = std::move(textures);
+scratch::Material::Material(std::vector<std::shared_ptr<Texture>> textures) : _id(0), _index(-1),
+                                                                              _textures(std::move(textures)) {
 }
 
-scratch::Material::Material() {
-    _id = 0;
-    _textures = std::vector<std::shared_ptr<Texture>>();
-}
+scratch::Material::Material() : _id(0), _index(-1),
+                                _textures(std::vector<std::shared_ptr<Texture>>()) {}
 
 void scratch::Material::activate() {
     _shader->use();
@@ -141,7 +138,7 @@ void scratch::Material::setupStateParameters() {
                 _shader->setMat4(key, std::get<glm::mat4>(val.value));
                 break;
             default:
-            SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
@@ -166,7 +163,7 @@ void scratch::Material::clearParameters() {
                 _shader->setMat4(key, glm::mat4(1));
                 break;
             default:
-            SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
@@ -226,7 +223,7 @@ void scratch::Material::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffe
                 serializedValue = scratch::StringConverter::toString(std::get<glm::mat4>(param.second.value));
                 break;
             default:
-            SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         writer.String(serializedValue.c_str(),
@@ -278,7 +275,7 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
                 param.value = scratch::StringConverter::parsemat4(rawValue);
                 break;
             default:
-            SCRATCH_ASSERT_NEVER("Unknown Param Type");
+                SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         _parameters[key] = param;
