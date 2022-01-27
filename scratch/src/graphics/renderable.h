@@ -5,6 +5,7 @@
 #include <include/rapidjson/writer.h>
 #include <include/rapidjson/prettywriter.h>
 #include <include/rapidjson/document.h>
+#include <memory>
 #include "mesh.h"
 
 namespace scratch {
@@ -20,6 +21,6 @@ namespace scratch {
 
         virtual void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) = 0;
 
-        unsigned unsigned int getId() const;
+        unsigned int getId() const;
     };
 }

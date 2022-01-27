@@ -18,6 +18,7 @@
 #include <include/rapidjson/document.h>
 #include <utilities/assert.h>
 #include <variant>
+#include <memory>
 
 #include "converter/string_converter.h"
 #include "shader.h"
