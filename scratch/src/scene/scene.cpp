@@ -19,27 +19,13 @@ scratch::Scene::Scene() {
                                                  scratch::WHITE);
 }
 
-std::shared_ptr<scratch::Renderable>
-scratch::Scene::createModelRenderable(const std::string &modelPath) {
-    std::shared_ptr<scratch::Model> newModel = ScratchManagers->resourceManager->loadModel(modelPath);
-    for (auto material : newModel->getDefaultMaterials()) {
-        material->setId(_idFactory.generateId());
-    }
-    std::shared_ptr<scratch::Renderable> pRenderable = std::make_shared<scratch::ModelRenderable>(
-            _idFactory.generateId(), newModel);
-    _renderables.push_back(pRenderable);
-    return pRenderable;
-
-}
-
-
-std::shared_ptr<scratch::Entity> scratch::Scene::createEntity(std::shared_ptr<Renderable> renderable) {
-    std::shared_ptr<scratch::Entity> pEntity = std::make_shared<scratch::Entity>(_idFactory.generateId(), renderable);
+std::shared_ptr<scratch::Entity> scratch::Scene::createEntity() {
+    std::shared_ptr<scratch::Entity> pEntity = std::make_shared<scratch::Entity>(_idFactory.generateId(), this);
     _entities.push_back(pEntity);
     return pEntity;
 }
 
-std::shared_ptr<scratch::SceneNode> scratch::Scene::createSceneNode(std::shared_ptr<Entity> entity) {
+std::shared_ptr<scratch::SceneNode> scratch::Scene::createSceneNode(std::shared_ptr<scratch::Entity> entity) {
     std::shared_ptr<scratch::SceneNode> pNode = std::make_shared<scratch::SceneNode>();
     pNode->setEntity(entity);
     pNode->setId(_idFactory.generateId());
@@ -50,11 +36,14 @@ std::shared_ptr<scratch::SceneNode> scratch::Scene::createSceneNode(std::shared_
 void scratch::Scene::render(const scratch::Camera &camera) const {
     for (auto currentNode : rootNode.getChildren()) {
         auto currentEntity = currentNode->getEntity();
-        std::vector<std::shared_ptr<scratch::Mesh>> meshes = currentEntity->getRenderable()->getMeshes();
-        std::vector<std::shared_ptr<scratch::Material>> materials = currentEntity->getRenderable()->getMaterials();
-        glm::mat4 transformMatrix = currentNode->generateTransformMatrix();
-        for (int i = 0; i < meshes.size(); ++i) {
-            scratch::RenderSystem::drawMesh(meshes[i], materials[meshes[i]->getMaterialIndex()], transformMatrix);
+        if (currentEntity->hasComponent<scratch::ModelRenderable>()) {
+            std::shared_ptr<ModelRenderable> renderableComponent = currentEntity->getComponent<scratch::ModelRenderable>();
+            std::vector<std::shared_ptr<scratch::Mesh>> meshes = renderableComponent->getMeshes();
+            std::vector<std::shared_ptr<scratch::Material>> materials = renderableComponent->getMaterials();
+            glm::mat4 transformMatrix = currentNode->generateTransformMatrix();
+            for (const auto & mesh : meshes) {
+                scratch::RenderSystem::drawMesh(mesh, materials[mesh->getMaterialIndex()], transformMatrix);
+            }
         }
     }
     RenderSystem::render(camera, directionalLight);
