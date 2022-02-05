@@ -112,8 +112,9 @@ void scratch::Material::setupTextures() {
         else if (name == "texture_height")
             number = std::to_string(heightNr++); // transfer unsigned int to stream
         std::string uniformName = "material.";
+        uniformName.append(name).append(number);
         // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(_shader->getShaderId(), uniformName.append(name).append(number).c_str()), i);
+        glUniform1i(glGetUniformLocation(_shader->getShaderId(), uniformName.c_str()), i);
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, _textures[i]->id);
     }
@@ -138,7 +139,7 @@ void scratch::Material::setupStateParameters() {
                 _shader->setMat4(key, std::get<glm::mat4>(val.value));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
@@ -163,7 +164,7 @@ void scratch::Material::clearParameters() {
                 _shader->setMat4(key, glm::mat4(1));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
     }
@@ -223,7 +224,7 @@ void scratch::Material::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffe
                 serializedValue = scratch::StringConverter::toString(std::get<glm::mat4>(param.second.value));
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         writer.String(serializedValue.c_str(),
@@ -275,7 +276,7 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
                 param.value = scratch::StringConverter::parsemat4(rawValue);
                 break;
             default:
-                SCRATCH_ASSERT_NEVER("Unknown Param Type");
+            SCRATCH_ASSERT_NEVER("Unknown Param Type");
                 break;
         }
         _parameters[key] = param;
