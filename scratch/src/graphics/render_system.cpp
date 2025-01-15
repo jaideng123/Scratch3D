@@ -124,13 +124,14 @@ void scratch::RenderSystem::render(const scratch::Camera &camera, DirectionalLig
 
     std::optional<scratch::Material> currentMaterial = {};
     for (const auto &renderItem : _renderQueue) {
-        // PERF: only context switch when we have a new material
-        currentMaterial = *renderItem.materialRef;
-        currentMaterial.value().activate();
-        currentMaterial.value().getShader()->setMat4("view", view);
-        currentMaterial.value().getShader()->setMat4("projection", projection);
-        currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
-        directionalLight.applyToShader(*currentMaterial.value().getShader());
+        if(!currentMaterial.has_value() || currentMaterial.value().getId() != renderItem.materialRef->getId()) {
+            currentMaterial = *renderItem.materialRef;
+            currentMaterial.value().activate();
+            currentMaterial.value().getShader()->setMat4("view", view);
+            currentMaterial.value().getShader()->setMat4("projection", projection);
+            currentMaterial.value().getShader()->setVec3("viewPos", viewPosition);
+            directionalLight.applyToShader(*currentMaterial.value().getShader());
+        }
 
         currentMaterial.value().getShader()->setMat4("model", renderItem.transform);
 

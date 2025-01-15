@@ -59,6 +59,14 @@ void scratch::SceneManager::saveScene(std::string scenePath) {
     writer.String("lastGeneratedId");
     writer.Uint(activeScene._idFactory.getLastGeneratedId());
 
+//    std::cout << "Serializing Renderables" << std::endl;
+//    writer.String("renderables");
+//    writer.StartArray();
+//    for (auto &renderable : activeScene._renderables) {
+//        renderable->serialize(writer);
+//    }
+//    writer.EndArray();
+
     std::cout << "Serializing Entities" << std::endl;
     writer.String("entities");
     writer.StartArray();
