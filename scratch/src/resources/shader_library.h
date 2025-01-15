@@ -4,7 +4,6 @@
 #include <memory>
 #include <xxhash.h>
 #include <unordered_map>
-#include <vector>
 
 namespace scratch {
     class ShaderLibrary {

@@ -4,7 +4,9 @@
 
 #include "id_factory.h"
 
-scratch::IdFactory::IdFactory() : _lastGeneratedId(0) {}
+scratch::IdFactory::IdFactory() {
+    _lastGeneratedId = 0;
+}
 
 unsigned int scratch::IdFactory::generateId() {
     unsigned int new_id = this->_lastGeneratedId + 1;

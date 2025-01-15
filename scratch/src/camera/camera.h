@@ -34,11 +34,11 @@ namespace scratch {
                 _zoom(ZOOM),
                 _nearPlane(NEAR_PLANE),
                 _farPlane(FAR_PLANE),
-                _fieldOfView(FIELD_OF_VIEW),
-                _position(position),
-                _worldUp(up),
-                _yaw(yaw),
-                _pitch(pitch){
+                _fieldOfView(FIELD_OF_VIEW) {
+            _position = position;
+            _worldUp = up;
+            _yaw = yaw;
+            _pitch = pitch;
             updateCameraVectors();
         }
 

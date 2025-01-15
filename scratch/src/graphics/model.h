@@ -33,7 +33,7 @@ namespace scratch {
 
         void setDefaultShader(const std::shared_ptr<scratch::Shader> &defaultShader);
 
-        const std::vector<std::shared_ptr<scratch::Material>> &getDefaultMaterials() const;
+        const std::vector<std::shared_ptr<scratch::Material>> &scratch::Model::getDefaultMaterials() const;
 
     private:
         unsigned int _id;
@@ -49,11 +49,11 @@ namespace scratch {
 
         void processNode(aiNode *node, const aiScene *scene);
 
-        std::shared_ptr<scratch::Material> transformMaterial(aiMaterial *assimpMaterial);
+        std::shared_ptr<scratch::Material> scratch::Model::transformMaterial(aiMaterial *assimpMaterial);
 
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 
-        void attachMaterialTextures(const std::shared_ptr<scratch::Material> material,
+        void scratch::Model::attachMaterialTextures(const std::shared_ptr<scratch::Material> material,
                                                     const aiMaterial *assimpMaterial,
                                                     const aiTextureType &type,
                                                     const std::string &typeName);
