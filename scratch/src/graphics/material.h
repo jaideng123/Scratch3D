@@ -121,6 +121,6 @@ namespace scratch {
 
         void deserialize(const rapidjson::Value &object);
 
-        void addTexture(const std::string &path, const std::string &typeName);
+        void addTexture(const std::string path, const std::string typeName);
     };
 } // namespace scratch

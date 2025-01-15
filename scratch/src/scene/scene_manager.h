@@ -4,6 +4,7 @@
 #include <entity/entity.h>
 #include <entity/id_factory.h>
 #include <lights/directional_light.h>
+#include <graphics/renderable.h>
 #include "scene_node.h"
 #include "camera/camera.h"
 #include "scene.h"

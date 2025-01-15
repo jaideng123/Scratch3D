@@ -286,7 +286,7 @@ void scratch::Material::deserialize(const rapidjson::Value &object) {
 
 }
 
-void scratch::Material::addTexture(const std::string &path, const std::string &typeName) {
+void scratch::Material::addTexture(const std::string path, const std::string typeName) {
     _textures.push_back(ScratchManagers->resourceManager->loadTexture(path, typeName));
 }
 

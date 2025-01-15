@@ -64,7 +64,7 @@ const std::shared_ptr<scratch::Entity> &scratch::SceneNode::getEntity() const {
 }
 
 void scratch::SceneNode::setEntity(const std::shared_ptr<scratch::Entity> &entity) {
-    _entity = entity;
+    SceneNode::_entity = entity;
 }
 
 unsigned int scratch::SceneNode::getId() const {

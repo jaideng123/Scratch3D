@@ -11,6 +11,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <ImGuizmo.h>
+#include <utilities/assert.h>
 #include "main.h"
 
 std::vector<scratch::RenderItem> scratch::RenderSystem::_renderQueue;

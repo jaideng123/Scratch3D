@@ -2,29 +2,28 @@
 
 #include <vector>
 #include <memory>
-#include <entity/entity_component.h>
-#include "material.h"
+#include "renderable.h"
 
 namespace scratch { class Model; }
 namespace scratch { class Mesh; }
 
 namespace scratch {
-    class ModelRenderable : public scratch::EntityComponent {
+    class ModelRenderable : public scratch::Renderable {
     public:
-        ModelRenderable(const std::shared_ptr<scratch::Model> &model);
+        ModelRenderable(unsigned int id, const std::shared_ptr<scratch::Model>& model);
 
-        ModelRenderable(std::shared_ptr<scratch::Model> model,
+        ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
                         const std::vector<std::shared_ptr<scratch::Material>> &materials);
 
         ModelRenderable();
 
-        std::vector<std::shared_ptr<scratch::Mesh>> &getMeshes();
+        std::vector<std::shared_ptr<scratch::Mesh>> &getMeshes() override;
 
-        static const std::string TYPE_NAME;
+        static const std::string TYPE;
 
-        std::string getTypeName() override;
+        std::string getType() override;
 
-        const std::vector<std::shared_ptr<scratch::Material>> &getMaterials() const;
+        virtual const std::vector<std::shared_ptr<scratch::Material>> &getMaterials() const override;
 
 
         void serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) override;

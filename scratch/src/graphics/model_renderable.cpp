@@ -7,24 +7,24 @@
 #include <utility>
 #include "graphics/model.h"
 
-const std::string scratch::ModelRenderable::TYPE_NAME = "MODEL";
+const std::string scratch::ModelRenderable::TYPE = "MODEL";
 
 std::vector<std::shared_ptr<scratch::Mesh>> &scratch::ModelRenderable::getMeshes() {
     return _model->getMeshes();
 }
 
 
-std::string scratch::ModelRenderable::getTypeName() {
-    return TYPE_NAME;
+std::string scratch::ModelRenderable::getType() {
+    return TYPE;
 }
 
 void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer) {
     writer.StartObject();
 
     writer.String("type");
-    writer.String(TYPE_NAME.c_str(), static_cast<rapidjson::SizeType>(TYPE_NAME.length()));
-//    writer.String("id");
-//    writer.Uint(_id);
+    writer.String(TYPE.c_str(), static_cast<rapidjson::SizeType>(TYPE.length()));
+    writer.String("id");
+    writer.Uint(_id);
     writer.String("modelPath");
     writer.String(_model->getModelPath().c_str(), static_cast<rapidjson::SizeType>(_model->getModelPath().length()));
     writer.String("materials");
@@ -37,17 +37,17 @@ void scratch::ModelRenderable::serialize(rapidjson::PrettyWriter<rapidjson::Stri
     writer.EndObject();
 }
 
-scratch::ModelRenderable::ModelRenderable(const std::shared_ptr<scratch::Model> &model)
-        : ModelRenderable(model,
-                          model->getDefaultMaterials()) {}
+scratch::ModelRenderable::ModelRenderable(unsigned int id, const std::shared_ptr<scratch::Model>& model) : ModelRenderable(id,
+                                                                                                                    model,
+                                                                                                                    model->getDefaultMaterials()) {}
 
-scratch::ModelRenderable::ModelRenderable(std::shared_ptr<scratch::Model> model,
-                                          const std::vector<std::shared_ptr<scratch::Material>> &materials) : _model(
-        std::move(model)) {
+scratch::ModelRenderable::ModelRenderable(unsigned int id, std::shared_ptr<scratch::Model> model,
+                                          const std::vector<std::shared_ptr<scratch::Material>>& materials) : _model(std::move(model)) {
     _materials.clear();
-    for (const auto &material: materials) {
+    for (const auto& material: materials) {
         _materials.emplace_back(std::make_shared<scratch::Material>(*material));
     }
+    this->_id = id;
 }
 
 scratch::ModelRenderable::ModelRenderable() {}
